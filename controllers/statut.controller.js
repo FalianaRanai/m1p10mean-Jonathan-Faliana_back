@@ -105,11 +105,6 @@ exports.deleteStatut = async (req, res) => {
     verifyArgumentExistence(["id"], req.params);
     Statutdb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-        await Userdb.updateMany(
-          { statut: data._id },
-          { statut: null },
-          { session }
-        );
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch((err) => {

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const tacheseffectueesSchema = new mongoose.Schema({
+const tacheeffectueeSchema = new mongoose.Schema({
   dateTache: {
     type: Date,
     required: true,
@@ -17,9 +17,9 @@ const tacheseffectueesSchema = new mongoose.Schema({
   },
 });
 
-tacheseffectueesSchema.set("timestamps", true); // ajoute created_at et upated_at
-const Tacheseffectueesdb = mongoose.model(
-  "tacheseffectuees",
-  tacheseffectueesSchema
+tacheeffectueeSchema.set("timestamps", true); // ajoute created_at et upated_at
+const Tacheeffectueedb = mongoose.model(
+  "tacheeffectuee",
+  tacheeffectueeSchema
 );
-module.exports = Tacheseffectueesdb;
+module.exports = Tacheeffectueedb;

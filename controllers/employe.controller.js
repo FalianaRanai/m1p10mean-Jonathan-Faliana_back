@@ -18,6 +18,7 @@ exports.getEmploye = (req, res) => {
 
     Employedb.findById(id)
       .populate({ path: "user", populate: { path: "role" } })
+      .populate("listeTachesEffectuees")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -34,6 +35,7 @@ exports.getListeEmploye = (req, res) => {
   try {
     Employedb.find({})
       .populate({ path: "user", populate: { path: "role" } })
+      .populate("listeTachesEffectuees")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
