@@ -1,28 +1,19 @@
-const Rendezvousdb = require("../models/rendezvous.model");
-const controllerName = "rendezvous.controller";
+const Statutdb = require("../models/statut.model");
+const controllerName = "statut.controller";
 const mongoose = require("mongoose");
+const Userdb = require("../models/user.model");
 const ObjectId = require("mongodb").ObjectId;
 const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 
-exports.getRendezvous = (req, res) => {
-  const functionName = "getRendezvous";
+exports.getStatut = (req, res) => {
+  const functionName = "getStatut";
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Rendezvousdb.findById(id)
-      .populate({
-        path: "client",
-        populate: { path: "user", populate: { path: "role" } },
-      })
-      .populate({
-        path: "employe",
-        populate: { path: "user", populate: { path: "role" } },
-      })
-      .populate("listeServices")
-      .populate("statut")
+    Statutdb.findById(id)
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -34,20 +25,10 @@ exports.getRendezvous = (req, res) => {
   }
 };
 
-exports.getListeRendezvous = (req, res) => {
-  const functionName = "getListeRendezvous";
+exports.getListeStatut = (req, res) => {
+  const functionName = "getListeStatut";
   try {
-    Rendezvousdb.find({})
-      .populate({
-        path: "client",
-        populate: { path: "user", populate: { path: "role" } },
-      })
-      .populate({
-        path: "employe",
-        populate: { path: "user", populate: { path: "role" } },
-      })
-      .populate("listeServices")
-      .populate("statut")
+    Statutdb.find({})
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -59,35 +40,25 @@ exports.getListeRendezvous = (req, res) => {
   }
 };
 
-exports.addRendezvous = async (req, res) => {
-  const functionName = "addRendezvous";
+exports.addStatut = async (req, res) => {
+  const functionName = "addStatut"
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { client, employe, dateRdv, listeServices, statut } = req.body;
-
-    verifyArgumentExistence(
-      ["client", "employe", "dateRdv", "listeServices", "statut"],
-      req.body
-    );
+    const { nomStatut } = req.body;
+    verifyArgumentExistence(["nomStatut"], req.body);
 
     const newData = {
-      client: client,
-      employe: employe,
-      dateRdv: dateRdv,
-      listeServices: listeServices.map((service) => {
-        return new ObjectId(service);
-      }),
-      statut: new ObjectId(statut),
+      nomStatut: nomStatut,
     };
 
-    const dataToInsert = new Rendezvousdb(newData);
+    const dataToInsert = new Statutdb(newData);
     dataToInsert
       .save({ session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
-      .catch((err) => {
+      .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
       });
   } catch (err) {
@@ -95,31 +66,23 @@ exports.addRendezvous = async (req, res) => {
   }
 };
 
-exports.updateRendezvous = async (req, res) => {
-  const functionName = "updateRendezvous";
+exports.updateStatut = async (req, res) => {
+  const functionName = "updateStatut";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    // console.log("params", req.params, "body", req.body);
     const { id } = req.params;
-    const { client, employe, dateRdv, listeServices, statut } = req.body;
+    const { nomStatut } = req.body;
 
+    
+    verifyArgumentExistence(["nomStatut"], req.body);
     verifyArgumentExistence(["id"], req.params);
-    verifyArgumentExistence(
-      ["client", "employe", "dateRdv", "listeServices", "statut"],
-      req.body
-    );
 
     const newData = {
-      client: client,
-      employe: employe,
-      dateRdv: dateRdv,
-      listeServices: listeServices.map((service) => {
-        return new ObjectId(service);
-      }),
-      statut: new ObjectId(statut),
+      nomStatut: nomStatut,
     };
-
-    Rendezvousdb.findByIdAndUpdate(new ObjectId(id), newData, {
+    Statutdb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
@@ -133,19 +96,23 @@ exports.updateRendezvous = async (req, res) => {
   }
 };
 
-exports.deleteRendezvous = async (req, res) => {
-  const functionName = "deleteRendezvous";
+exports.deleteStatut = async (req, res) => {
+  const functionName = "deleteStatut";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-
-    Rendezvousdb.findByIdAndDelete(new ObjectId(id), { session })
+    Statutdb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
+        await Userdb.updateMany(
+          { statut: data._id },
+          { statut: null },
+          { session }
+        );
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
-      .catch(async (err) => {
+      .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
       });
   } catch (err) {
