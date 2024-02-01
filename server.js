@@ -25,23 +25,17 @@ const connectToDatabase = require("@config/database");
 connectToDatabase();
 
 // ++++++++++++++++++++++++++ ROUTES ++++++++++++++++++++++++++
-// const baseRoutes = require("@routes/base.routes");
-// const sousCategorieRoutes = require("@routes/sousCategorie.routes");
-// const categorieRoutes = require("@routes/categorie.routes");
-// const clientRoutes = require("@routes/client.routes");
-// const roleRoutes = require("@routes/role.routes");
-// const userRoutes = require("@routes/user.routes");
-// const userTokenRoutes = require("@routes/userToken.routes");
-// const annonceRoutes = require("@routes/annonce.routes");
+const baseRoutes = require("@routes/base.routes");
+const roleRoutes = require("@routes/role.routes");
+const userRoutes = require("@routes/user.routes");
+const serviceRoutes = require("@routes/service.routes");
+const userTokenRoutes = require("@routes/userToken.routes");
 
-// app.use("/", baseRoutes);
-// app.use("/SousCategorie", sousCategorieRoutes);
-// app.use("/Categorie", categorieRoutes);
-// app.use("/Client", clientRoutes);
-// app.use("/Role", roleRoutes);
-// app.use("/User", userRoutes);
-// app.use("/UserToken", userTokenRoutes);
-// app.use("/Annonce", annonceRoutes);
+app.use("/", baseRoutes);
+app.use("/Role", roleRoutes);
+app.use("/User", userRoutes);
+app.use("/Service", serviceRoutes);
+app.use("/UserToken", userTokenRoutes);
 
 //  Gérer les paths introuvables
 app.use((req, res)=>{
