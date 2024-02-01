@@ -108,7 +108,7 @@ exports.updateService = async (req, res) => {
 };
 
 exports.deleteService = async (req, res) => {
-  const functionName = "updateService";
+  const functionName = "deleteService";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

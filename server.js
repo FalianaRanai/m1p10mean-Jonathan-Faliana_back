@@ -28,14 +28,23 @@ connectToDatabase();
 const baseRoutes = require("@routes/base.routes");
 const roleRoutes = require("@routes/role.routes");
 const userRoutes = require("@routes/user.routes");
-const serviceRoutes = require("@routes/service.routes");
 const userTokenRoutes = require("@routes/userToken.routes");
+const serviceRoutes = require("@routes/service.routes");
+const clientRoutes = require("@routes/client.routes");
+const managerRoutes = require("@routes/manager.routes");
+const employeRoutes = require("@routes/employe.routes");
+const rendezvousRoutes = require("@routes/rendezvous.routes");
 
 app.use("/", baseRoutes);
 app.use("/Role", roleRoutes);
 app.use("/User", userRoutes);
-app.use("/Service", serviceRoutes);
 app.use("/UserToken", userTokenRoutes);
+app.use("/Service", serviceRoutes);
+app.use("/Client", clientRoutes);
+app.use("/Manager", managerRoutes);
+app.use("/Employe", employeRoutes);
+app.use("/Rendezvous", rendezvousRoutes);
+
 
 //  Gérer les paths introuvables
 app.use((req, res)=>{

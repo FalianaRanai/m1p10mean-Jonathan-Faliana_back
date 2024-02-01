@@ -16,7 +16,6 @@ const employeSchema = new mongoose.Schema({
     },
     listeTachesEffectuees: {
       type: [mongoose.Schema.Types.ObjectId],
-      required: true,
       ref: "tacheseffectuees"
   },
 });

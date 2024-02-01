@@ -1,17 +1,22 @@
-const UserTokendb = require("../models/userToken.model");
+const Rendezvousdb = require("../models/rendezvous.model");
+const controllerName = "rendezvous.controller";
 const mongoose = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
-const controllerName = "userToken.controller";
 const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 
-exports.getUserToken = (req, res) => {
-  const functionName = "getUserToken";
+exports.getRendezvous = (req, res) => {
+  const functionName = "getRendezvous";
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    UserTokendb.findById(id)
+
+    Rendezvousdb.findById(id)
+      .populate("client")
+      .populate("employe")
+      .populate("listeServices")
+      .populate("statut")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -23,10 +28,14 @@ exports.getUserToken = (req, res) => {
   }
 };
 
-exports.getListeUserToken = (req, res) => {
-  const functionName = "getListeUserToken";
+exports.getListeRendezvous = (req, res) => {
+  const functionName = "getListeRendezvous";
   try {
-    UserTokendb.find({})
+    Rendezvousdb.find({})
+      .populate("client")
+      .populate("employe")
+      .populate("listeServices")
+      .populate("statut")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -38,30 +47,35 @@ exports.getListeUserToken = (req, res) => {
   }
 };
 
-exports.addUserToken = async (req, res) => {
-  const functionName = "addUserToken";
+exports.addRendezvous = async (req, res) => {
+  const functionName = "addRendezvous";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { user, token } = req.body;
-    verifyArgumentExistence(["user", "token"], req.body);
+    const { client, employe, dateRdv, listeServices, statut } = req.body;
 
-    let expired_at = new Date();
-    expired_at.setDate(expired_at.getDate() + 3);
+    verifyArgumentExistence(
+      ["client", "employe", "dateRdv", "listeServices", "statut"],
+      req.body
+    );
 
     const newData = {
-      user: user,
-      token: token,
-      expired_at: expired_at,
+      client: client,
+      employe: employe,
+      dateRdv: dateRdv,
+      listeServices: listeServices.map((service) => {
+        return new ObjectId(service);
+      }),
+      statut: statut,
     };
 
-    const dataToInsert = new UserTokendb(newData);
+    const dataToInsert = new Rendezvousdb(newData);
     dataToInsert
       .save({ session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
-      .catch(async (err) => {
+      .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
       });
   } catch (err) {
@@ -69,24 +83,31 @@ exports.addUserToken = async (req, res) => {
   }
 };
 
-exports.updateUserToken = async (req, res) => {
-  const functionName = "updateUserToken";
+exports.updateRendezvous = async (req, res) => {
+  const functionName = "updateRendezvous";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    const { id } = req.params;
+    const { client, employe, dateRdv, listeServices, statut } = req.body;
 
-    const { user, token, expired_at } = req.body;
-    verifyArgumentExistence(["user", "token", "expired_at"], req.body);
+    verifyArgumentExistence(["id"], req.params);
+    verifyArgumentExistence(
+      ["client", "employe", "dateRdv", "listeServices", "statut"],
+      req.body
+    );
+
     const newData = {
-      user: user,
-      token: token,
-      expired_at: expired_at,
+      client: client,
+      employe: employe,
+      dateRdv: dateRdv,
+      listeServices: listeServices.map((service) => {
+        return new ObjectId(service);
+      }),
+      statut: statut,
     };
 
-    const {id} = req.params;
-    verifyArgumentExistence(["id"], req.params);
-
-    UserTokendb.findByIdAndUpdate(new ObjectId(id), newData, {
+    Rendezvousdb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
@@ -100,14 +121,15 @@ exports.updateUserToken = async (req, res) => {
   }
 };
 
-exports.deleteUserToken = async (req, res) => {
-  const functionName = "deleteUserToken";
+exports.deleteRendezvous = async (req, res) => {
+  const functionName = "deleteRendezvous";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    UserTokendb.findByIdAndDelete(new ObjectId(id), { session })
+
+    Rendezvousdb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })

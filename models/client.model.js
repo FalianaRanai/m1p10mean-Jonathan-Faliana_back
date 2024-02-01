@@ -16,7 +16,6 @@ const clientSchema = new mongoose.Schema({
     },
     historiqueRDV: {
       type: [mongoose.Schema.Types.ObjectId],
-      required: true,
       ref: "rendezvous"
   },
 });

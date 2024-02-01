@@ -159,6 +159,7 @@ exports.login = async (req, res) => {
         if (data.length > 0) {
           const user = data[0];
           const verifPassword = bcrypt.compareSync(password, user.password);
+
           if (verifPassword) {
             // console.log("Mot de passe correct");
 
@@ -179,13 +180,15 @@ exports.login = async (req, res) => {
 
             dataToInsert
               .save()
-              .then((data) => {
+              .then(async (userToken) => {
+
                 sendSuccessResponse(
                   res,
-                  { email: user.email, token: dataToInsert.token },
+                  { email: user.email, token: dataToInsert.token, role: user.role.nomRole },
                   controllerName,
                   functionName
                 );
+
               })
               .catch((err) => {
                 sendErrorResponse(res, err, controllerName, functionName);
