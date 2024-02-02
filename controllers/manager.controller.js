@@ -67,7 +67,7 @@ exports.addManager = async (req, res) => {
 
     let role = await Roledb.findOne({ nomRole: "Manager" });
     if(!role){
-      await (new Roledb({ nomRole: "Manager" })).save({ session });
+      await (new Roledb({ nomRole: "Manager" })).save();
       role = await Roledb.findOne({ nomRole: "Manager" });
     }
 
