@@ -69,7 +69,7 @@ exports.addClient = async (req, res) => {
 
     let role = await Roledb.findOne({ nomRole: "Client" });
     if(!role){
-      await (new Roledb({ nomRole: "Client" })).save();
+      await (new Roledb({ nomRole: "Client" })).save({ session });
       role = await Roledb.findOne({ nomRole: "Client" });
     }
 
