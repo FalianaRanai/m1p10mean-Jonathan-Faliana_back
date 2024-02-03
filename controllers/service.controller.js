@@ -5,6 +5,8 @@ const ObjectId = require("mongodb").ObjectId;
 const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const fs = require("fs");
+const path = require('path');
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -44,19 +46,46 @@ exports.addService = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { nomService, prix, duree, commission } = req.body;
+    const { nomService, prix, duree, commission, description } = req.body;
 
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission"],
+      ["nomService", "prix", "duree", "commission", "description"],
       req.body
     );
 
-    const newData = {
+    let nomFichier;
+    if(req.file){
+
+      const { originalname, buffer } = req.file;
+      const extension = path.extname(originalname);
+      const basename = path.basename(originalname, extension);
+      nomFichier = `${basename} - ${Date.now()}`+extension;
+
+      const filePath = `./public/Service/${nomFichier}`;
+
+      fs.writeFile(filePath, buffer, (err) => {
+        if (err) {
+          console.error(err);
+        } else {
+          console.log("File uploaded successfully");
+        }
+      });
+
+    }
+
+    let newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
     };
+
+    if(nomFichier){
+      newData.image = nomFichier;
+    }
+    else{
+      newData.icone = "flaticon-mortar";
+    }
 
     const dataToInsert = new Servicedb(newData);
     dataToInsert
