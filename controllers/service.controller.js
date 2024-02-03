@@ -115,18 +115,57 @@ exports.updateService = async (req, res) => {
       req.body
     );
 
+    let nomFichier;
+    if(req.file){
+
+      const { originalname, buffer } = req.file;
+      const extension = path.extname(originalname);
+      const basename = path.basename(originalname, extension);
+      nomFichier = `${basename} - ${Date.now()}`+extension;
+
+      const filePath = `./public/Service/${nomFichier}`;
+      fs.writeFile(filePath, buffer, (err) => {
+        if (err) {
+          console.error(err);
+        } else {
+          // response.send("Image uploaded successfully");
+          console.log("Image uploaded successfully");
+        }
+      });
+    }
+
+
     const newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
     };
+    if(nomFichier){
+      newData.image = nomFichier;
+    }
 
     Servicedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-        sendSuccessResponse(res, data, controllerName, functionName, session);
+
+        if(nomFichier){
+          // Chemin du fichier à supprimer
+          const filePathToDelete = `./public/Service/${data.image}`;
+
+          // Suppression du fichier
+          fs.unlink(filePathToDelete, (err) => {
+            if (err) {
+              console.error(`Erreur lors de la suppression du fichier ${data.image}`, err);
+              throw new Error("Erreur lors de la suppression (de l'image) de la donnée");
+            } else {
+              console.log(`Fichier ${data.image} supprimé avec succès`);
+              sendSuccessResponse(res, data, controllerName, functionName, session);
+            }
+          });
+        }
+        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -146,7 +185,21 @@ exports.deleteService = async (req, res) => {
 
     Servicedb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-        sendSuccessResponse(res, data, controllerName, functionName, session);
+
+        // Chemin du fichier à supprimer
+        const filePathToDelete = `./public/Service/${data.image}`;
+
+        // Suppression du fichier
+        fs.unlink(filePathToDelete, (err) => {
+          if (err) {
+            console.error(`Erreur lors de la suppression du fichier ${data.image}`, err);
+            throw new Error("Erreur lors de la suppression (de l'image) de la donnée");
+          } else {
+            console.log(`Fichier ${data.image} supprimé avec succès`);
+            sendSuccessResponse(res, data, controllerName, functionName, session);
+          }
+        });
+        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
