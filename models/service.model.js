@@ -16,6 +16,9 @@ const serviceSchema = new mongoose.Schema({
     commission: {
         type: Number,
         required: true
+    },
+    image: {
+        type: String,
     }
 });
 

@@ -9,6 +9,9 @@ const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 const { v4: uuidv4 } = require("uuid");
 const Roledb = require("../models/role.model");
+const Clientdb = require("../models/client.model");
+const Employedb = require("../models/employe.model");
+const Managerdb = require("../models/manager.model");
 
 exports.getUser = (req, res) => {
   const functionName = "getUser";
@@ -155,7 +158,7 @@ exports.login = async (req, res) => {
 
     Userdb.find({ email: email })
       .populate("role")
-      .then((data) => {
+      .then(async (data) => {
         if (data.length > 0) {
           const user = data[0];
           const verifPassword = bcrypt.compareSync(password, user.password);
@@ -178,13 +181,30 @@ exports.login = async (req, res) => {
               expired_at: expired_at,
             });
 
+            let userInformation = {};
+            let user_id = "";
+            
+            if(user.role.nomRole=="Client"){
+              let temp = await Clientdb.findOne({user:user._id});
+              // console.log(temp);
+              user_id = temp._id;
+            }
+            if(user.role.nomRole=="Employe"){
+              let temp = await Employedb.findOne({user:user._id});
+              user_id = temp._id;
+            }
+            if(user.role.nomRole=="Manager"){
+              let temp = await Managerdb.findOne({user:user._id});
+              user_id = temp._id;
+            }
+
             dataToInsert
               .save()
               .then(async (userToken) => {
 
                 sendSuccessResponse(
                   res,
-                  { email: user.email, token: dataToInsert.token, role: user.role.nomRole },
+                  { email: user.email, token: dataToInsert.token, role: user.role.nomRole, user_id: user_id },
                   controllerName,
                   functionName
                 );
