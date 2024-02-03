@@ -17,8 +17,16 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    description:{
+        type: String,
+        required: true,
+        default: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry"
+    },
     image: {
         type: String,
+    },
+    icone: {
+        type: String
     }
 });
 
