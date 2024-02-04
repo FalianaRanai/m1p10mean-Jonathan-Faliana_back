@@ -28,6 +28,9 @@ const serviceSchema = new mongoose.Schema({
     },
     icone: {
         type: String
+    },
+    galerie:{
+        type: Array
     }
 });
 

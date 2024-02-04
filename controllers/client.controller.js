@@ -84,9 +84,9 @@ exports.addClient = async (req, res) => {
     const dataUserToInsert = new Userdb(newDataUser);
     dataUserToInsert
       .save({ session })
-      .then((newUser) => {
-        
-        let nomFichier = writeFile(req, "Client");
+      .then(async (newUser) => {
+        let nomFichier = await writeFile(req, "Client");
+
         const newData = {
           nomClient: nomClient,
           prenomClient: prenomClient,
@@ -129,7 +129,7 @@ exports.updateClient = async (req, res) => {
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(["nomClient", "prenomClient", "user"], req.body);
 
-    let nomFichier = writeFile(req, "Client");
+    let nomFichier = await writeFile(req, "Client");
     const newData = {
       nomClient: nomClient,
       prenomClient: prenomClient,
@@ -141,18 +141,11 @@ exports.updateClient = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image!="default.webp") {
-          deleteFile({
-            repository: "Client",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
-        } else {
-          sendSuccessResponse(res, data, controllerName, functionName, session);
+        if (nomFichier && data.image != "default.webp") {
+          await deleteFile("Client", data.image);
         }
+        sendSuccessResponse(res, data, controllerName, functionName, session);
+
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
@@ -173,25 +166,17 @@ exports.deleteClient = async (req, res) => {
 
     Clientdb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-        
         await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
         await UserTokendb.deleteMany(
           { user: new ObjectId(data.user) },
           { session }
         );
 
-        if (data.image!="default.webp") {
-          deleteFile({
-            repository: "Client",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
-        } else {
-          sendSuccessResponse(res, data, controllerName, functionName, session);
+        if (data.image != "default.webp") {
+          await deleteFile("Client", data.image);
         }
+        sendSuccessResponse(res, data, controllerName, functionName, session);
+
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {

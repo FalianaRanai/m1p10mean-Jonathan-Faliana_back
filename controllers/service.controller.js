@@ -7,6 +7,8 @@ const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 const writeFile = require("@utils/writeFile.util");
 const deleteFile = require("@utils/deleteFile.util");
+const writeMultipleFile = require("@utils/writeMultipleFile.util");
+const deleteMultipleFile = require("@utils/deleteMultipleFile.util");
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -53,15 +55,18 @@ exports.addService = async (req, res) => {
       req.body
     );
 
-    let nomFichier = writeFile(req, "Service");
+    let nomFichier = await writeFile(req, "Service");
+    let nomsFichiers = await writeMultipleFile(req, "Service", "files");
+
     let newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
       description: description,
-      image : nomFichier ? nomFichier : undefined,
+      image: nomFichier ? nomFichier : undefined,
       icone: "",
+      galerie: nomsFichiers ? nomsFichiers : undefined,
     };
 
     const dataToInsert = new Servicedb(newData);
@@ -92,33 +97,31 @@ exports.updateService = async (req, res) => {
       req.body
     );
 
-    let nomFichier = writeFile(req, "Service");
+    let nomFichier = await writeFile(req, "Service");
+    let nomsFichiers = await writeMultipleFile(req, "Service", "files");
+
     const newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
       description: description,
-      image: nomFichier ? nomFichier : undefined
+      image: nomFichier ? nomFichier : undefined,
+      galerie: nomsFichiers ? nomsFichiers : undefined,
     };
 
     Servicedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image!="default.webp") {
-          deleteFile({
-            repository: "Service",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
+        await deleteMultipleFile("Service", data.galerie);
+
+        if (data.image != "default.webp") {
+          await deleteFile("Service", data.image);
         }
-        else{
-          sendSuccessResponse(res, data, controllerName, functionName, session);
-        }
+
+        sendSuccessResponse(res, data, controllerName, functionName, session);
+
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
@@ -139,20 +142,13 @@ exports.deleteService = async (req, res) => {
 
     Servicedb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-        if (data.image!="default.webp") {
-          deleteFile({
-            repository: "Service",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
+        await deleteMultipleFile("Service", data.galerie);
+
+        if (data.image != "default.webp") {
+          await deleteFile("Service", data.image);
         }
-        else{
-          sendSuccessResponse(res, data, controllerName, functionName, session);
-        }
-       
+
+        sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

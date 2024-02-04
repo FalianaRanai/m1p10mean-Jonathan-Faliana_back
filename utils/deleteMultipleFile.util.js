@@ -1,9 +1,9 @@
 const fs = require("fs").promises;
 
-const deleteFile = async (repository, data) => {
+const deleteMultipleFile = async (repository, data) => {
   try {
     if (data) {
-      const filesToDelete = [data];
+      const filesToDelete = data;
 
       const filePaths = filesToDelete.map(
         (fileName) => `./public/${repository}/${fileName}`
@@ -11,7 +11,7 @@ const deleteFile = async (repository, data) => {
 
       await Promise.all(filePaths.map((filePath) => fs.unlink(filePath)));
 
-      console.log("Fichier supprimé avec succès");
+      console.log("Fichiers supprimés avec succès");
     }
   } catch (error) {
     console.error("Erreur lors de la suppression des fichiers :", error);
@@ -19,4 +19,4 @@ const deleteFile = async (repository, data) => {
   }
 };
 
-module.exports = deleteFile;
+module.exports = deleteMultipleFile;

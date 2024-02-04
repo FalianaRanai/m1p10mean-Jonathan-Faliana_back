@@ -84,9 +84,8 @@ exports.addEmploye = async (req, res) => {
     const dataUserToInsert = new Userdb(newDataUser);
     dataUserToInsert
       .save({ session })
-      .then((newUser) => {
-        
-        let nomFichier = writeFile(req, "Employe");
+      .then(async (newUser) => {
+        let nomFichier = await writeFile(req, "Employe");
 
         const newData = {
           nomEmploye: nomEmploye,
@@ -130,7 +129,7 @@ exports.updateEmploye = async (req, res) => {
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(["nomEmploye", "prenomEmploye", "user"], req.body);
 
-    let nomFichier = writeFile(req, "Employe");
+    let nomFichier = await writeFile(req, "Employe");
     const newData = {
       nomEmploye: nomEmploye,
       prenomEmploye: prenomEmploye,
@@ -142,18 +141,10 @@ exports.updateEmploye = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image!="default.webp") {
-          deleteFile({
-            repository: "Employe",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
-        } else {
-          sendSuccessResponse(res, data, controllerName, functionName, session);
+        if (nomFichier && data.image != "default.webp") {
+          await deleteFile("Employe", data.image);
         }
+        sendSuccessResponse(res, data, controllerName, functionName, session);
 
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
@@ -181,18 +172,10 @@ exports.deleteEmploye = async (req, res) => {
           { session }
         );
 
-        if (data.image!="default.webp") {
-          deleteFile({
-            repository: "Client",
-            res: res,
-            data: data,
-            controllerName: controllerName,
-            functionName: functionName,
-            session: session,
-          });
-        } else {
-          sendSuccessResponse(res, data, controllerName, functionName, session);
+        if (data.image != "default.webp") {
+          await deleteFile("Employe", data.image);
         }
+        sendSuccessResponse(res, data, controllerName, functionName, session);
 
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })

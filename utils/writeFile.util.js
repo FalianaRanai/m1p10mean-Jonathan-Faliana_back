@@ -1,33 +1,31 @@
 const fs = require("fs");
 const path = require('path');
 
-const writeFile = (req, repository) =>{
-
-  // console.log("request: ", req.files['file']);
-
+const writeFile = async (req, repository, param = "file") => {
   let nomFichier = "";
-  if(req.file || req.files['file']){
 
-    let file = req.file ? req.file : req.files['file'][0];
-    // console.log("mba tafiditra ato v aloha?");
+  if (req[param] || (req.files && req.files[param] && req.files[param][0])) {
+    const file = req[param] || req.files[param][0];
+    // console.log(file);
 
     const { originalname, buffer } = file;
     const extension = path.extname(originalname);
     const basename = path.basename(originalname, extension);
-    nomFichier = `${basename} - ${Date.now()}`+extension;
+    nomFichier = `${basename} - ${Date.now()}` + extension;
 
     const filePath = `./public/${repository}/${nomFichier}`;
+    console.log(filePath);
 
-    fs.writeFile(filePath, buffer, (err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        console.log("File uploaded successfully");
-      }
-    });
+    // Utilisez directement le buffer pour écrire le fichier
+    fs.writeFileSync(filePath, buffer);
 
+    // Supprimer le fichier temporaire
+    if (file.path) {
+      fs.unlinkSync(file.path);
+    }
   }
+
   return nomFichier;
-}
+};
 
 module.exports = writeFile;
