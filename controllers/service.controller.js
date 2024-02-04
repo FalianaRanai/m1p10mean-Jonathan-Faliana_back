@@ -54,7 +54,6 @@ exports.addService = async (req, res) => {
     );
 
     let nomFichier = writeFile(req, "Service");
-
     let newData = {
       nomService: nomService,
       prix: prix,
@@ -62,7 +61,7 @@ exports.addService = async (req, res) => {
       commission: commission,
       description: description,
       image : nomFichier ? nomFichier : undefined,
-      icone: nomFichier ? "" : "flaticon-mortar",
+      icone: "",
     };
 
     const dataToInsert = new Servicedb(newData);
@@ -94,7 +93,6 @@ exports.updateService = async (req, res) => {
     );
 
     let nomFichier = writeFile(req, "Service");
-
     const newData = {
       nomService: nomService,
       prix: prix,
@@ -108,7 +106,7 @@ exports.updateService = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier) {
+        if (nomFichier && data.image!="default.webp") {
           deleteFile({
             repository: "Service",
             res: res,
@@ -141,14 +139,20 @@ exports.deleteService = async (req, res) => {
 
     Servicedb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-        deleteFile({
-          repository: "Service",
-          res: res,
-          data: data,
-          controllerName: controllerName,
-          functionName: functionName,
-          session: session,
-        });
+        if (data.image!="default.webp") {
+          deleteFile({
+            repository: "Service",
+            res: res,
+            data: data,
+            controllerName: controllerName,
+            functionName: functionName,
+            session: session,
+          });
+        }
+        else{
+          sendSuccessResponse(res, data, controllerName, functionName, session);
+        }
+       
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
