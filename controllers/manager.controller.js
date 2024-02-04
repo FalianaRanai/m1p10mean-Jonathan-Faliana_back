@@ -9,6 +9,8 @@ const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 const bcrypt = require("bcrypt");
+const writeFile = require("@utils/writeFile.util");
+const deleteFile = require("@utils/deleteFile.util");
 
 exports.getManager = (req, res) => {
   const functionName = "getManager";
@@ -66,8 +68,8 @@ exports.addManager = async (req, res) => {
     }
 
     let role = await Roledb.findOne({ nomRole: "Manager" });
-    if(!role){
-      await (new Roledb({ nomRole: "Manager" })).save();
+    if (!role) {
+      await new Roledb({ nomRole: "Manager" }).save();
       role = await Roledb.findOne({ nomRole: "Manager" });
     }
 
@@ -81,10 +83,12 @@ exports.addManager = async (req, res) => {
     dataUserToInsert
       .save({ session })
       .then((newUser) => {
+        let nomFichier = writeFile(req, "Manager");
         const newData = {
           nomManager: nomManager,
           prenomManager: prenomManager,
           user: new ObjectId(newUser._id),
+          image: nomFichier ? nomFichier : undefined,
         };
 
         const dataToInsert = new Managerdb(newData);
@@ -122,17 +126,31 @@ exports.updateManager = async (req, res) => {
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(["nomManager", "prenomManager", "user"], req.body);
 
+    let nomFichier = writeFile(req, "Manager");
     const newData = {
       nomManager: nomManager,
       prenomManager: prenomManager,
       user: new ObjectId(user),
+      image: nomFichier ? nomFichier : undefined,
     };
 
     Managerdb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-        sendSuccessResponse(res, data, controllerName, functionName, session);
+        if (nomFichier && data.image != "default.webp") {
+          deleteFile({
+            repository: "Manager",
+            data: data,
+            res: res,
+            session: session,
+            controllerName: controllerName,
+            functionName: functionName,
+          });
+        } else {
+          sendSuccessResponse(res, data, controllerName, functionName, session);
+        }
+        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -153,8 +171,23 @@ exports.deleteManager = async (req, res) => {
     Managerdb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
         await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
-        await UserTokendb.deleteMany({ user: new ObjectId(data.user) }, { session });
-        sendSuccessResponse(res, data, controllerName, functionName, session);
+        await UserTokendb.deleteMany(
+          { user: new ObjectId(data.user) },
+          { session }
+        );
+        if (data.image!="default.webp") {
+          deleteFile({
+            repository: "Manager",
+            res: res,
+            data: data,
+            controllerName: controllerName,
+            functionName: functionName,
+            session: session,
+          });
+        } else {
+          sendSuccessResponse(res, data, controllerName, functionName, session);
+        }
+        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

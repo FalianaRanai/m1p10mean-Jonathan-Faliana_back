@@ -5,8 +5,8 @@ const ObjectId = require("mongodb").ObjectId;
 const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
-const fs = require("fs");
-const path = require('path');
+const writeFile = require("@utils/writeFile.util");
+const deleteFile = require("@utils/deleteFile.util");
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -53,39 +53,17 @@ exports.addService = async (req, res) => {
       req.body
     );
 
-    let nomFichier;
-    if(req.file){
-
-      const { originalname, buffer } = req.file;
-      const extension = path.extname(originalname);
-      const basename = path.basename(originalname, extension);
-      nomFichier = `${basename} - ${Date.now()}`+extension;
-
-      const filePath = `./public/Service/${nomFichier}`;
-
-      fs.writeFile(filePath, buffer, (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log("File uploaded successfully");
-        }
-      });
-
-    }
+    let nomFichier = writeFile(req, "Service");
 
     let newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
+      description: description,
+      image : nomFichier ? nomFichier : undefined,
+      icone: nomFichier ? "" : "flaticon-mortar",
     };
-
-    if(nomFichier){
-      newData.image = nomFichier;
-    }
-    else{
-      newData.icone = "flaticon-mortar";
-    }
 
     const dataToInsert = new Servicedb(newData);
     dataToInsert
@@ -107,63 +85,41 @@ exports.updateService = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { nomService, prix, duree, commission } = req.body;
+    const { nomService, prix, duree, commission, description } = req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission"],
+      ["nomService", "prix", "duree", "commission", "description"],
       req.body
     );
 
-    let nomFichier;
-    if(req.file){
-
-      const { originalname, buffer } = req.file;
-      const extension = path.extname(originalname);
-      const basename = path.basename(originalname, extension);
-      nomFichier = `${basename} - ${Date.now()}`+extension;
-
-      const filePath = `./public/Service/${nomFichier}`;
-      fs.writeFile(filePath, buffer, (err) => {
-        if (err) {
-          console.error(err);
-        } else {
-          // response.send("Image uploaded successfully");
-          console.log("Image uploaded successfully");
-        }
-      });
-    }
-
+    let nomFichier = writeFile(req, "Service");
 
     const newData = {
       nomService: nomService,
       prix: prix,
       duree: duree,
       commission: commission,
+      description: description,
+      image: nomFichier ? nomFichier : undefined
     };
-    if(nomFichier){
-      newData.image = nomFichier;
-    }
 
     Servicedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-
-        if(nomFichier){
-          // Chemin du fichier à supprimer
-          const filePathToDelete = `./public/Service/${data.image}`;
-
-          // Suppression du fichier
-          fs.unlink(filePathToDelete, (err) => {
-            if (err) {
-              console.error(`Erreur lors de la suppression du fichier ${data.image}`, err);
-              throw new Error("Erreur lors de la suppression (de l'image) de la donnée");
-            } else {
-              console.log(`Fichier ${data.image} supprimé avec succès`);
-              sendSuccessResponse(res, data, controllerName, functionName, session);
-            }
+        if (nomFichier) {
+          deleteFile({
+            repository: "Service",
+            res: res,
+            data: data,
+            controllerName: controllerName,
+            functionName: functionName,
+            session: session,
           });
+        }
+        else{
+          sendSuccessResponse(res, data, controllerName, functionName, session);
         }
         // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
@@ -185,21 +141,14 @@ exports.deleteService = async (req, res) => {
 
     Servicedb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
-
-        // Chemin du fichier à supprimer
-        const filePathToDelete = `./public/Service/${data.image}`;
-
-        // Suppression du fichier
-        fs.unlink(filePathToDelete, (err) => {
-          if (err) {
-            console.error(`Erreur lors de la suppression du fichier ${data.image}`, err);
-            throw new Error("Erreur lors de la suppression (de l'image) de la donnée");
-          } else {
-            console.log(`Fichier ${data.image} supprimé avec succès`);
-            sendSuccessResponse(res, data, controllerName, functionName, session);
-          }
+        deleteFile({
+          repository: "Service",
+          res: res,
+          data: data,
+          controllerName: controllerName,
+          functionName: functionName,
+          session: session,
         });
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
