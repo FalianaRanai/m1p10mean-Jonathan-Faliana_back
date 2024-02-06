@@ -1,0 +1,42 @@
+{
+  "name": "m1p10mean-jonathan-faliana_back",
+  "version": "1.0.0",
+  "description": "\"# m1p10mean-ROBISOA-Jonathan-Jacob-RANAIVOSEHENO-Faliana-Nirindra_BACK\"",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FalianaRanai/m1p10mean-ROBISOA-Jonathan-Jacob-RANAIVOSEHENO-Faliana-Nirindra_BACK.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/FalianaRanai/m1p10mean-ROBISOA-Jonathan-Jacob-RANAIVOSEHENO-Faliana-Nirindra_BACK/issues"
+  },
+  "homepage": "https://github.com/FalianaRanai/m1p10mean-ROBISOA-Jonathan-Jacob-RANAIVOSEHENO-Faliana-Nirindra_BACK#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "express": "^4.18.2",
+    "module-alias": "^2.2.3",
+    "moment": "^2.30.1",
+    "mongoose": "^8.1.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^3.0.3",
+    "uuid": "^9.0.1"
+  },
+  "_moduleAliases": {
+    "@root": ".",
+    "@config": "config",
+    "@controllers": "controllers",
+    "@models": "models",
+    "@routes": "routes",
+    "@utils": "utils"
+  }
+}
