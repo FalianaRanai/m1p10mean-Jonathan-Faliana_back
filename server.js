@@ -35,7 +35,7 @@ const managerRoutes = require("@routes/manager.routes");
 const employeRoutes = require("@routes/employe.routes");
 const rendezvousRoutes = require("@routes/rendezvous.routes");
 const statutRoutes = require("@routes/statut.routes");
-const tacheeffectueeRoutes = require("@routes/tacheeffectuee.routes");
+const tacheRoutes = require("@routes/tache.routes");
 
 app.use("/", baseRoutes);
 app.use("/Role", roleRoutes);
@@ -47,7 +47,7 @@ app.use("/Manager", managerRoutes);
 app.use("/Employe", employeRoutes);
 app.use("/Rendezvous", rendezvousRoutes);
 app.use("/Statut", statutRoutes);
-app.use("/TacheEffectuee", tacheeffectueeRoutes);
+app.use("/Tache", tacheRoutes);
 
 
 //  Gérer les paths introuvables

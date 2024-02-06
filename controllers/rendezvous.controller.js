@@ -20,7 +20,14 @@ exports.getRendezvous = (req, res) => {
       })
       .populate({
         path: "employe",
-        populate: { path: "user", populate: { path: "role" } },
+        populate: [ 
+          { path: "user", populate: { path: "role" } },
+          { path: "listeTaches", populate: [
+            { path: "employe", populate: { path: "user", populate: { path: "role" } } },
+            { path: "statut" },
+            { path: "service" },
+          ]}
+        ]
       })
       .populate("listeServices")
       .populate("statut")
@@ -45,7 +52,14 @@ exports.getListeRendezvous = (req, res) => {
       })
       .populate({
         path: "employe",
-        populate: { path: "user", populate: { path: "role" } },
+        populate: [ 
+          { path: "user", populate: { path: "role" } },
+          { path: "listeTaches", populate: [
+            { path: "employe", populate: { path: "user", populate: { path: "role" } } },
+            { path: "statut" },
+            { path: "service" },
+          ]}
+        ]
       })
       .populate("listeServices")
       .populate("statut")
@@ -65,21 +79,25 @@ exports.addRendezvous = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { client, employe, dateRdv, listeServices, statut } = req.body;
+    const { client, dateRdv, listeEmployes, listeServices, listeTaches } = req.body;
 
     verifyArgumentExistence(
-      ["client", "employe", "dateRdv", "listeServices", "statut"],
+      ["client", "employe", "dateRdv", "listeEmployes", "listeServices", "listeTaches"],
       req.body
     );
 
     const newData = {
       client: client,
-      employe: employe,
       dateRdv: dateRdv,
+      listeEmployes: listeEmployes.map((employe) => {
+        return new ObjectId(employe);
+      }),
       listeServices: listeServices.map((service) => {
         return new ObjectId(service);
       }),
-      statut: new ObjectId(statut),
+      listeTaches: listeTaches.map((tache) => {
+        return new ObjectId(tache);
+      })
     };
 
     const dataToInsert = new Rendezvousdb(newData);
@@ -106,22 +124,26 @@ exports.updateRendezvous = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { client, employe, dateRdv, listeServices, statut } = req.body;
+    const { client, dateRdv, listeEmployes, listeServices, listeTaches  } = req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["client", "employe", "dateRdv", "listeServices", "statut"],
+      ["client", "dateRdv", "listeEmployes", "listeServices", "listeTaches"],
       req.body
     );
 
     const newData = {
       client: client,
-      employe: employe,
       dateRdv: dateRdv,
+      listeEmployes: listeEmployes.map((employe) => {
+        return new ObjectId(employe);
+      }),
       listeServices: listeServices.map((service) => {
         return new ObjectId(service);
       }),
-      statut: new ObjectId(statut),
+      listeTaches: listeTaches.map((tache) => {
+        return new ObjectId(tache);
+      }),
     };
 
     Rendezvousdb.findByIdAndUpdate(new ObjectId(id), newData, {

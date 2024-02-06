@@ -11,6 +11,7 @@ const bcrypt = require("bcrypt");
 const UserTokendb = require("../models/userToken.model");
 const writeFile = require("@utils/writeFile.util");
 const deleteFile = require("@utils/deleteFile.util");
+const Tachedb = require("../models/tache.model");
 
 exports.getEmploye = (req, res) => {
   const functionName = "getEmploye";
@@ -20,7 +21,17 @@ exports.getEmploye = (req, res) => {
 
     Employedb.findById(id)
       .populate({ path: "user", populate: { path: "role" } })
-      .populate("listeTachesEffectuees")
+      .populate({
+        path: "listeTaches",
+        populate: [
+          {
+            path: "employe",
+            populate: { path: "user", populate: { path: "role" } },
+          },
+          { path: "service" },
+          { path: "statut" },
+        ],
+      })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -37,7 +48,17 @@ exports.getListeEmploye = (req, res) => {
   try {
     Employedb.find({})
       .populate({ path: "user", populate: { path: "role" } })
-      .populate("listeTachesEffectuees")
+      .populate({
+        path: "listeTaches",
+        populate: [
+          {
+            path: "employe",
+            populate: { path: "user", populate: { path: "role" } },
+          },
+          { path: "service" },
+          { path: "statut" },
+        ],
+      })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -169,6 +190,10 @@ exports.deleteEmploye = async (req, res) => {
         await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
         await UserTokendb.deleteMany(
           { user: new ObjectId(data.user) },
+          { session }
+        );
+        await Tachedb.deleteMany(
+          { employe: new ObjectId(data._id) },
           { session }
         );
 
