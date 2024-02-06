@@ -8,10 +8,11 @@ const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
 const bcrypt = require("bcrypt");
-const UserTokendb = require("../models/userToken.model");
 const writeFile = require("@utils/writeFile.util");
-const deleteFile = require("@utils/deleteFile.util");
-const Tachedb = require("../models/tache.model");
+const NAMES = require("../utils/randomData.util");
+const getRandomNumber = require("../utils/getRandomNumber.util");
+const getRandomNumbersInArray = require("../utils/getRandomNumbersInArray.util");
+const Servicedb = require("../models/service.model");
 
 exports.getEmploye = (req, res) => {
   const functionName = "getEmploye";
@@ -34,7 +35,12 @@ exports.getEmploye = (req, res) => {
       })
       .populate("listeServices")
       .then((data) => {
-        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
+        sendSuccessResponse(
+          res,
+          data ? data[0] : null,
+          controllerName,
+          functionName
+        );
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -47,7 +53,7 @@ exports.getEmploye = (req, res) => {
 exports.getListeEmploye = (req, res) => {
   const functionName = "getListeEmploye";
   try {
-    Employedb.find({ isDeleted: false})
+    Employedb.find({ isDeleted: false })
       .populate({ path: "user", populate: { path: "role" } })
       .populate({
         path: "listeTaches",
@@ -181,7 +187,7 @@ exports.updateEmploye = async (req, res) => {
         return new ObjectId(element);
       }),
     };
-    
+
     Employedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
@@ -204,13 +210,86 @@ exports.deleteEmploye = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Employedb.findByIdAndUpdate(new ObjectId(id), {isDeleted: true}, { session })
+    Employedb.findByIdAndUpdate(
+      new ObjectId(id),
+      { isDeleted: true },
+      { session }
+    )
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
       });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName, session);
+  }
+};
+
+exports.generateData = async (req, res) => {
+  const functionName = "generateData";
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  console.log("NAMES", NAMES.length);
+
+  try {
+    const { length } = req.params;
+    verifyArgumentExistence(["length"], req.params);
+
+    let random1 = 0;
+    let random2 = 0;
+
+    let listeServices = await Servicedb.find({ isDeleted: false });
+    let serviceLength = 0;
+    let randomIndex = [];
+
+    let mesServices = [];
+
+    let verif = 0;
+
+    let role = await Roledb.findOne({ nomRole: "Employe" });
+    if (!role) {
+      await new Roledb({ nomRole: "Employe" }).save();
+      role = await Roledb.findOne({ nomRole: "Employe" });
+    }
+
+    for (let i = 0; i < length; i++) {
+      random1 = getRandomNumber(0, NAMES.length - 1);
+      random2 = getRandomNumber(0, NAMES.length - 1);
+
+      serviceLength = getRandomNumber(1, listeServices.length);
+      randomIndex = getRandomNumbersInArray(
+        serviceLength,
+        listeServices.length
+      );
+
+      mesServices = randomIndex.map((element) => {
+        return listeServices[element];
+      });
+
+      console.log(random1, random2, randomIndex, NAMES[random1])
+      
+      const newDataUser = {
+        email: `${NAMES[random1].toLowerCase()}_${NAMES[
+          random2
+        ].toLowerCase()}_${new Date().getTime()}@gmail.com`,
+        password: bcrypt.hashSync(`0123456789`, 10),
+        role: new ObjectId(role._id),
+      };
+      const dataUserToInsert = new Userdb(newDataUser);
+      let user = await dataUserToInsert.save({ session });
+
+      const newData = {
+        nomEmploye: NAMES[random1],
+        prenomEmploye: NAMES[random2],
+        mesServices: mesServices,
+        user: user
+      };
+      const dataToInsert = new Employedb(newData);
+      await dataToInsert.save({ session });
+    }
+    sendSuccessResponse(res, null, controllerName, functionName, session);
   } catch (err) {
     sendErrorResponse(res, err, controllerName, functionName, session);
   }
