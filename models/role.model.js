@@ -4,6 +4,10 @@ const roleSchema = new mongoose.Schema({
     nomRole: {
         type: String,
         required: true
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

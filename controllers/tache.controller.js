@@ -13,7 +13,7 @@ exports.getTache = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Tachedb.findById(id)
+    Tachedb.find({_id: id, isDeleted: false})
       .populate({
         path: "employe",
         populate: { path: "user", populate: { path: "role" } },
@@ -21,7 +21,7 @@ exports.getTache = (req, res) => {
       .populate("service")
       .populate("statut")
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -34,7 +34,7 @@ exports.getTache = (req, res) => {
 exports.getListeTache = (req, res) => {
   const functionName = "getListeTache";
   try {
-    Tachedb.find({})
+    Tachedb.find({ isDeleted: false })
       .populate({
         path: "employe",
         populate: { path: "user", populate: { path: "role" } },
@@ -130,12 +130,9 @@ exports.deleteTache = async (req, res) => {
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    Tachedb.findByIdAndDelete(new ObjectId(id), { session })
+    Tachedb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
-
-        await Employedb.updateOne({ _id: data.employe  }, { $pull: { listeTaches: data._id } });
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

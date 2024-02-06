@@ -31,6 +31,10 @@ const serviceSchema = new mongoose.Schema({
     },
     galerie:{
         type: Array
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

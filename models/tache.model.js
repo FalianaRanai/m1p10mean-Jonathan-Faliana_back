@@ -23,6 +23,10 @@ const tacheSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "statut",
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   }
 });
 

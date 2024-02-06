@@ -17,9 +17,9 @@ exports.getService = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.findById(id)
+    Servicedb.find({_id: id, isDeleted: false})
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -32,7 +32,7 @@ exports.getService = (req, res) => {
 exports.getListeService = (req, res) => {
   const functionName = "getListeService";
   try {
-    Servicedb.find({})
+    Servicedb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -115,21 +115,7 @@ exports.updateService = async (req, res) => {
       session,
     })
       .then(async (data) => {
-
-        try{
-            await deleteMultipleFile("Service", data.galerie);
-
-            if (data.image != "default.webp") {
-            await deleteFile("Service", data.image);
-            }
-        }catch(err){
-            console.log(err);
-        }
-        
-
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -147,17 +133,8 @@ exports.deleteService = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.findByIdAndDelete(new ObjectId(id), { session })
+    Servicedb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true },{ session })
       .then(async (data) => {
-
-        await deleteMultipleFile("Service", data.galerie);
-
-        if (data.image != "default.webp") {
-          await deleteFile("Service", data.image);
-        }
-
-        Employedb.updateMany({}, {$pull: { mesServices: new ObjectId(data._id) }}, { session });
-
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {

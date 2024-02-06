@@ -22,6 +22,10 @@ const clientSchema = new mongoose.Schema({
     type: String,
     default: "default.webp",
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  }
 });
 
 clientSchema.set("timestamps", true); // ajoute created_at et upated_at

@@ -24,6 +24,10 @@ const rendezvousSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         required: true,
         ref: "tache"
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

@@ -11,7 +11,7 @@ exports.getUserToken = (req, res) => {
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    UserTokendb.findById(id)
+    UserTokendb.find({_id: id, isDeleted: false})
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -26,7 +26,7 @@ exports.getUserToken = (req, res) => {
 exports.getListeUserToken = (req, res) => {
   const functionName = "getListeUserToken";
   try {
-    UserTokendb.find({})
+    UserTokendb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -107,7 +107,7 @@ exports.deleteUserToken = async (req, res) => {
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    UserTokendb.findByIdAndDelete(new ObjectId(id), { session })
+    UserTokendb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })

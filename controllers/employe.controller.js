@@ -19,7 +19,7 @@ exports.getEmploye = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Employedb.findById(id)
+    Employedb.find({ _id: id, isDeleted: false })
       .populate({ path: "user", populate: { path: "role" } })
       .populate({
         path: "listeTaches",
@@ -34,7 +34,7 @@ exports.getEmploye = (req, res) => {
       })
       .populate("listeServices")
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -47,7 +47,7 @@ exports.getEmploye = (req, res) => {
 exports.getListeEmploye = (req, res) => {
   const functionName = "getListeEmploye";
   try {
-    Employedb.find({})
+    Employedb.find({ isDeleted: false})
       .populate({ path: "user", populate: { path: "role" } })
       .populate({
         path: "listeTaches",
@@ -186,9 +186,6 @@ exports.updateEmploye = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image != "default.webp") {
-          await deleteFile("Employe", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
@@ -207,24 +204,9 @@ exports.deleteEmploye = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Employedb.findByIdAndDelete(new ObjectId(id), { session })
+    Employedb.findByIdAndUpdate(new ObjectId(id), {isDeleted: true}, { session })
       .then(async (data) => {
-        await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
-        await UserTokendb.deleteMany(
-          { user: new ObjectId(data.user) },
-          { session }
-        );
-        await Tachedb.deleteMany(
-          { employe: new ObjectId(data._id) },
-          { session }
-        );
-
-        if (data.image != "default.webp") {
-          await deleteFile("Employe", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

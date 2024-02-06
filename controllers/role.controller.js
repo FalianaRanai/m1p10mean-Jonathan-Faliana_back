@@ -13,9 +13,9 @@ exports.getRole = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Roledb.findById(id)
+    Roledb.find({_id: id, isDeleted: false})
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -28,7 +28,7 @@ exports.getRole = (req, res) => {
 exports.getListeRole = (req, res) => {
   const functionName = "getListeRole";
   try {
-    Roledb.find({})
+    Roledb.find({ idDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -103,13 +103,8 @@ exports.deleteRole = async (req, res) => {
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    Roledb.findByIdAndDelete(new ObjectId(id), { session })
+    Roledb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
-        await Userdb.updateMany(
-          { role: data._id },
-          { role: null },
-          { session }
-        );
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch((err) => {

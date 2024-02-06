@@ -13,7 +13,7 @@ exports.getRendezvous = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Rendezvousdb.findById(id)
+    Rendezvousdb.find({_id: id, isDeleted: false})
       .populate({
         path: "client",
         populate: { path: "user", populate: { path: "role" } },
@@ -32,7 +32,7 @@ exports.getRendezvous = (req, res) => {
       .populate("listeServices")
       .populate("statut")
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -45,7 +45,7 @@ exports.getRendezvous = (req, res) => {
 exports.getListeRendezvous = (req, res) => {
   const functionName = "getListeRendezvous";
   try {
-    Rendezvousdb.find({})
+    Rendezvousdb.find({ isDeleted: false })
       .populate({
         path: "client",
         populate: { path: "user", populate: { path: "role" } },
@@ -168,13 +168,9 @@ exports.deleteRendezvous = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Rendezvousdb.findByIdAndDelete(new ObjectId(id), { session })
+    Rendezvousdb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
-
-        await Clientdb.updateOne({ _id: data.client  }, { $pull: { historiqueRDV: data._id } });
-
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

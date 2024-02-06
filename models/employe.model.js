@@ -25,6 +25,10 @@ const employeSchema = new mongoose.Schema({
   mesServices:{
     type: [mongoose.Schema.Types.ObjectId],
     ref: "service",
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false
   }
 });
 

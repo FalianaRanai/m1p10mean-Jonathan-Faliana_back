@@ -18,7 +18,7 @@ exports.getClient = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Clientdb.findById(id)
+    Clientdb.find({_id: id, isDeleted: false } )
       .populate({ path: "user", populate: { path: "role" } })
       .populate({
         path: "historiqueRDV",
@@ -42,7 +42,7 @@ exports.getClient = (req, res) => {
         ],
       })
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -55,7 +55,7 @@ exports.getClient = (req, res) => {
 exports.getListeClient = (req, res) => {
   const functionName = "getListeClient";
   try {
-    Clientdb.find({})
+    Clientdb.find({isDeleted: false})
       .populate({ path: "user", populate: { path: "role" } })
       .populate({
         path: "historiqueRDV",
@@ -181,12 +181,7 @@ exports.updateClient = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image != "default.webp") {
-          await deleteFile("Client", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -204,20 +199,9 @@ exports.deleteClient = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Clientdb.findByIdAndDelete(new ObjectId(id), { session })
+    Clientdb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
-        await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
-        await UserTokendb.deleteMany(
-          { user: new ObjectId(data.user) },
-          { session }
-        );
-
-        if (data.image != "default.webp") {
-          await deleteFile("Client", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

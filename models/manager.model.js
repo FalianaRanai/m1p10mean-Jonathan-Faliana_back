@@ -18,6 +18,10 @@ const managerSchema = new mongoose.Schema({
     type: String,
     default: "default.webp",
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  }
 });
 
 managerSchema.set("timestamps", true); // ajoute created_at et upated_at

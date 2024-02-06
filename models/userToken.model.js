@@ -13,6 +13,10 @@ const userTokenSchema = new mongoose.Schema({
     expired_at: {
         type: Date,
         required: true
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

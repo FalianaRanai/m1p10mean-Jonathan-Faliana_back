@@ -13,9 +13,9 @@ exports.getStatut = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Statutdb.findById(id)
+    Statutdb.find({_id: id, isDeleted: false})
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -28,7 +28,7 @@ exports.getStatut = (req, res) => {
 exports.getListeStatut = (req, res) => {
   const functionName = "getListeStatut";
   try {
-    Statutdb.find({})
+    Statutdb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -103,7 +103,7 @@ exports.deleteStatut = async (req, res) => {
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    Statutdb.findByIdAndDelete(new ObjectId(id), { session })
+    Statutdb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true },{ session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
