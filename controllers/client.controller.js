@@ -20,7 +20,27 @@ exports.getClient = (req, res) => {
 
     Clientdb.findById(id)
       .populate({ path: "user", populate: { path: "role" } })
-      .populate("historiqueRDV")
+      .populate({
+        path: "historiqueRDV",
+        populate: [
+          {
+            path: "listeEmployes",
+            populate: { path: "user", populate: { path: "role" } },
+          },
+          { path: "listeServices" },
+          {
+            path: "listeTaches",
+            populate: [
+              {
+                path: "employe",
+                populate: { path: "user", populate: { path: "role" } },
+              },
+              { path: "service" },
+              { path: "statut" },
+            ],
+          },
+        ],
+      })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -37,7 +57,27 @@ exports.getListeClient = (req, res) => {
   try {
     Clientdb.find({})
       .populate({ path: "user", populate: { path: "role" } })
-      .populate("historiqueRDV")
+      .populate({
+        path: "historiqueRDV",
+        populate: [
+          {
+            path: "listeEmployes",
+            populate: { path: "user", populate: { path: "role" } },
+          },
+          { path: "listeServices" },
+          {
+            path: "listeTaches",
+            populate: [
+              {
+                path: "employe",
+                populate: { path: "user", populate: { path: "role" } },
+              },
+              { path: "service" },
+              { path: "statut" },
+            ],
+          },
+        ],
+      })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
