@@ -114,11 +114,17 @@ exports.updateService = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        await deleteMultipleFile("Service", data.galerie);
 
-        if (data.image != "default.webp") {
-          await deleteFile("Service", data.image);
+        try{
+            await deleteMultipleFile("Service", data.galerie);
+
+            if (data.image != "default.webp") {
+            await deleteFile("Service", data.image);
+            }
+        }catch(err){
+            console.log(err);
         }
+        
 
         sendSuccessResponse(res, data, controllerName, functionName, session);
 
