@@ -9,6 +9,7 @@ const writeFile = require("@utils/writeFile.util");
 const deleteFile = require("@utils/deleteFile.util");
 const writeMultipleFile = require("@utils/writeMultipleFile.util");
 const deleteMultipleFile = require("@utils/deleteMultipleFile.util");
+const Employedb = require("../models/employe.model");
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -148,11 +149,14 @@ exports.deleteService = async (req, res) => {
 
     Servicedb.findByIdAndDelete(new ObjectId(id), { session })
       .then(async (data) => {
+
         await deleteMultipleFile("Service", data.galerie);
 
         if (data.image != "default.webp") {
           await deleteFile("Service", data.image);
         }
+
+        Employedb.updateMany({}, {$pull: { mesServices: new ObjectId(data._id) }}, { session });
 
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })

@@ -22,6 +22,10 @@ const employeSchema = new mongoose.Schema({
     type: String,
     default: "default.webp",
   },
+  mesServices:{
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "service",
+  }
 });
 
 employeSchema.set("timestamps", true); // ajoute created_at et upated_at
