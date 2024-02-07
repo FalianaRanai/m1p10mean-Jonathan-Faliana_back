@@ -114,3 +114,26 @@ exports.deleteStatut = async (req, res) => {
     sendErrorResponse(res, err, controllerName, functionName, session);
   }
 };
+
+exports.getStatutEnCours = async (req, res) =>{
+  const functionName = "getStatutEnCours";
+  try {
+
+    Statutdb.find({nomStatut: "en cours", isDeleted: false})
+      .then(async (data) => {
+
+        let statutEncours = data ? data[0] : null;
+        if(!statutEncours){
+          await (new Statutdb({ nomStatut: "en cours" })).save();
+          statutEncours = await Statutdb.findOne({ nomStatut: "en cours", isDeleted: false });
+        }
+
+        sendSuccessResponse(res, statutEncours, controllerName, functionName);
+      })
+      .catch((err) => {
+        sendErrorResponse(res, err, controllerName, functionName);
+      });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName);
+  }
+}
