@@ -33,7 +33,7 @@ exports.getEmploye = (req, res) => {
           { path: "statut" },
         ],
       })
-      .populate("listeServices")
+      .populate("mesServices")
       .then((data) => {
         sendSuccessResponse(
           res,
@@ -66,7 +66,7 @@ exports.getListeEmploye = (req, res) => {
           { path: "statut" },
         ],
       })
-      .populate("listeServices")
+      .populate("mesServices")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
