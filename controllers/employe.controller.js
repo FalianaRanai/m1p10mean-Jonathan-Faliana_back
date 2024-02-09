@@ -28,7 +28,10 @@ exports.getEmploye = (req, res) => {
                 populate: [
                     {
                         path: "employe",
-                        populate: { path: "user", populate: { path: "role" } },
+                        populate: [
+                            { path: "user", populate: { path: "role" } },
+                            { path: "mesServices" }
+                        ],
                     },
                     { path: "service" },
                     { path: "statut" },
@@ -45,9 +48,9 @@ exports.getEmploye = (req, res) => {
             })
             .catch((err) => {
                 sendErrorResponse(res, err, controllerName, functionName);
-            });
+            })
     } catch (err) {
-        sendErrorResponse(res, err, controllerName, functionName);
+        sendErrorResponse(res, err, controllerName, functionName, session);
     }
 };
 
@@ -300,7 +303,7 @@ exports.updateHoraireTravail = (req, res) => {
     const functionName = "updateHoraireTravail";
 
     try {
-        verifyArgumentExistence(["id"],req.params);
+        verifyArgumentExistence(["id"], req.params);
         verifyArgumentExistence(
             [
                 "debut",
@@ -316,8 +319,8 @@ exports.updateHoraireTravail = (req, res) => {
         const heureDebut = debut.split(':');
         const heureFin = fin.split(':');
 
-        const dateDeb = moment().set({'hour': heureDebut[0], 'minute': heureDebut[1], 'second': 0});
-        const dateFin = moment().set({'hour': heureFin[0], 'minute': heureFin[1], 'second': 0});
+        const dateDeb = moment().set({ 'hour': heureDebut[0], 'minute': heureDebut[1], 'second': 0 });
+        const dateFin = moment().set({ 'hour': heureFin[0], 'minute': heureFin[1], 'second': 0 });
 
         const updatedValue = {
             horaireTravail: {
@@ -327,17 +330,17 @@ exports.updateHoraireTravail = (req, res) => {
             }
         }
 
-        Employedb.findOneAndUpdate({_id: id}, updatedValue)
-        .then((data)=>{
-            sendSuccessResponse(
-                res,
-                null,
-                controllerName,
-                functionName
-            );
-        }).catch((err) => {
-            sendErrorResponse(res, err, controllerName, functionName);
-        });
+        Employedb.findOneAndUpdate({ _id: id }, updatedValue)
+            .then((data) => {
+                sendSuccessResponse(
+                    res,
+                    null,
+                    controllerName,
+                    functionName
+                );
+            }).catch((err) => {
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
     }
