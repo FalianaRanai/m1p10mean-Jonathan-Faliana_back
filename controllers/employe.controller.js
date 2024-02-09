@@ -190,11 +190,25 @@ exports.updateEmploye = async (req, res) => {
         return new ObjectId(element);
       }),
     };
+    
 
     Employedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
+
+        if(req.body.password){
+          let password = req.body.password;
+          let confirmPassword = req.body.confirmPassword;
+          if((password && !confirmPassword) || (!password && confirmPassword)) {
+            throw new Error("Veillez remplir les champs de mot de passe");
+          }
+          if (confirmPassword && confirmPassword !== password) {
+            throw new Error("Les mots de passes ne correspondent pas");
+          }
+          await Userdb.findByIdAndUpdate(new ObjectId(data.user), { password: bcrypt.hashSync(req.body.password, 10) }, { session });
+        }
+
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
