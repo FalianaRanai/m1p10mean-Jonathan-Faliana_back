@@ -27,7 +27,10 @@ exports.getEmploye = (req, res) => {
         populate: [
           {
             path: "employe",
-            populate: { path: "user", populate: { path: "role" } },
+            populate: [
+              { path: "user", populate: { path: "role" } },
+              { path: "mesServices"}
+            ],
           },
           { path: "service" },
           { path: "statut" },

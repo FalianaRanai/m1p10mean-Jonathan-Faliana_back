@@ -10,16 +10,6 @@ const rendezvousSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    listeEmployes: {
-        type: [mongoose.Schema.Types.ObjectId],
-        required: true,
-        ref: "employe"
-    },
-    listeServices: {
-        type: [mongoose.Schema.Types.ObjectId],
-        required: true,
-        ref: "service"
-    },
     listeTaches:{
         type: [mongoose.Schema.Types.ObjectId],
         required: true,

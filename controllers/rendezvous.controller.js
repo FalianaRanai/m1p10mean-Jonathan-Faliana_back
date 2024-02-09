@@ -13,26 +13,53 @@ exports.getRendezvous = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Rendezvousdb.find({_id: id, isDeleted: false})
+    Rendezvousdb.find({ _id: id, isDeleted: false })
       .populate({
         path: "client",
-        populate: { path: "user", populate: { path: "role" } },
+        populate: [
+          { path: "user", populate: { path: "role" } },
+          {
+            path: "historiqueRDV",
+            populate: [
+              {
+                path: "listeTaches",
+                populate: [
+                  {
+                    path: "employe",
+                    populate: [
+                      { path: "user", populate: { path: "role" } },
+                      { path: "mesServices" },
+                    ],
+                  },
+                  { path: "service" },
+                  { path: "statut" },
+                ],
+              },
+            ],
+          },
+        ],
       })
       .populate({
-        path: "employe",
-        populate: [ 
-          { path: "user", populate: { path: "role" } },
-          { path: "listeTaches", populate: [
-            { path: "employe", populate: { path: "user", populate: { path: "role" } } },
-            { path: "statut" },
-            { path: "service" },
-          ]}
-        ]
+        path: "listeTaches",
+        populate: [
+          {
+            path: "employe",
+            populate: [
+              { path: "user", populate: { path: "role" } },
+              { path: "mesServices" },
+            ],
+          },
+          { path: "service" },
+          { path: "statut" },
+        ],
       })
-      .populate("listeServices")
-      .populate("statut")
       .then((data) => {
-        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
+        sendSuccessResponse(
+          res,
+          data ? data[0] : null,
+          controllerName,
+          functionName
+        );
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -46,23 +73,45 @@ exports.getListeRendezvous = (req, res) => {
   const functionName = "getListeRendezvous";
   try {
     Rendezvousdb.find({ isDeleted: false })
-      .populate({
-        path: "client",
-        populate: { path: "user", populate: { path: "role" } },
-      })
-      .populate({
-        path: "employe",
-        populate: [ 
-          { path: "user", populate: { path: "role" } },
-          { path: "listeTaches", populate: [
-            { path: "employe", populate: { path: "user", populate: { path: "role" } } },
-            { path: "statut" },
-            { path: "service" },
-          ]}
-        ]
-      })
-      .populate("listeServices")
-      .populate("statut")
+    .populate({
+      path: "client",
+      populate: [
+        { path: "user", populate: { path: "role" } },
+        {
+          path: "historiqueRDV",
+          populate: [
+            {
+              path: "listeTaches",
+              populate: [
+                {
+                  path: "employe",
+                  populate: [
+                    { path: "user", populate: { path: "role" } },
+                    { path: "mesServices" },
+                  ],
+                },
+                { path: "service" },
+                { path: "statut" },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    .populate({
+      path: "listeTaches",
+      populate: [
+        {
+          path: "employe",
+          populate: [
+            { path: "user", populate: { path: "role" } },
+            { path: "mesServices" },
+          ],
+        },
+        { path: "service" },
+        { path: "statut" },
+      ],
+    })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -79,36 +128,36 @@ exports.addRendezvous = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { client, dateRdv, listeEmployes, listeServices, listeTaches } = req.body;
+    const { client, dateRdv, listeTaches } =
+      req.body;
 
     verifyArgumentExistence(
-      ["client", "employe", "dateRdv", "listeEmployes", "listeServices", "listeTaches"],
+      [
+        "client",
+        "employe",
+        "dateRdv",
+        "listeTaches",
+      ],
       req.body
     );
 
     const newData = {
       client: client,
       dateRdv: dateRdv,
-      listeEmployes: listeEmployes.map((employe) => {
-        return new ObjectId(employe);
-      }),
-      listeServices: listeServices.map((service) => {
-        return new ObjectId(service);
-      }),
       listeTaches: listeTaches.map((tache) => {
         return new ObjectId(tache);
-      })
+      }),
     };
 
     const dataToInsert = new Rendezvousdb(newData);
     dataToInsert
       .save({ session })
       .then(async (data) => {
-
-        await Clientdb.updateOne({ _id: data.client  }, { $push: { historiqueRDV: data._id } });
+        await Clientdb.updateOne(
+          { _id: data.client },
+          { $push: { historiqueRDV: data._id } }
+        );
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -124,23 +173,18 @@ exports.updateRendezvous = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { client, dateRdv, listeEmployes, listeServices, listeTaches  } = req.body;
+    const { client, dateRdv, listeTaches } =
+      req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["client", "dateRdv", "listeEmployes", "listeServices", "listeTaches"],
+      ["client", "dateRdv", "listeTaches"],
       req.body
     );
 
     const newData = {
       client: client,
       dateRdv: dateRdv,
-      listeEmployes: listeEmployes.map((employe) => {
-        return new ObjectId(employe);
-      }),
-      listeServices: listeServices.map((service) => {
-        return new ObjectId(service);
-      }),
       listeTaches: listeTaches.map((tache) => {
         return new ObjectId(tache);
       }),
@@ -168,7 +212,11 @@ exports.deleteRendezvous = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Rendezvousdb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
+    Rendezvousdb.findByIdAndUpdate(
+      new ObjectId(id),
+      { isDeleted: true },
+      { session }
+    )
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
