@@ -15,99 +15,6 @@ const getRandomNumbersInArray = require("../utils/getRandomNumbersInArray.util")
 const Servicedb = require("../models/service.model");
 const moment = require('moment');
 
-exports.updateHoraireTravail = (req, res) => {
-    const functionName = "updateHoraireTravail";
-
-    try {
-        verifyArgumentExistence(["id"],req.params);
-        verifyArgumentExistence(
-            [
-                "debut",
-                "fin",
-                "jourTravail"
-            ],
-            req.body
-        );
-
-        const { debut, fin, jourTravail } = req.body;
-        const { id } = req.params;
-
-        const heureDebut = debut.split(':');
-        const heureFin = fin.split(':');
-
-        const dateDeb = moment().set({'hour': heureDebut[0], 'minute': heureDebut[1], 'second': 0});
-        const dateFin = moment().set({'hour': heureFin[0], 'minute': heureFin[1], 'second': 0});
-
-        const updatedValue = {
-            horaireTravail: {
-                debut: dateDeb.toDate(),
-                fin: dateFin.toDate(),
-                jourTravail: jourTravail
-            }
-        }
-
-        Employedb.findOneAndUpdate({_id: id}, updatedValue)
-        .then((data)=>{
-            sendSuccessResponse(
-                res,
-                null,
-                controllerName,
-                functionName
-            );
-        }).catch((err) => {
-            sendErrorResponse(res, err, controllerName, functionName);
-        });
-    } catch (err) {
-        sendErrorResponse(res, err, controllerName, functionName);
-    }
-
-}
-
-exports.getListeEmployeLibre = (req, res) => {
-    const functionName = "getListeEmployeLibre";
-
-    try {
-        verifyArgumentExistence(
-            [
-                "idService",
-                "dateHeureDebut"
-            ],
-            req.body
-        );
-
-        const { idService, dateHeureDebut } = req.body;
-
-
-        // Employedb.find({ _id: id, isDeleted: false })
-        //     .populate({ path: "user", populate: { path: "role" } })
-        //     .populate({
-        //         path: "listeTaches",
-        //         populate: [
-        //             {
-        //                 path: "employe",
-        //                 populate: { path: "user", populate: { path: "role" } },
-        //             },
-        //             { path: "service" },
-        //             { path: "statut" },
-        //         ],
-        //     })
-        //     .populate("mesServices")
-        //     .then((data) => {
-        //         sendSuccessResponse(
-        //             res,
-        //             data ? data[0] : null,
-        //             controllerName,
-        //             functionName
-        //         );
-        //     })
-        //     .catch((err) => {
-        //         sendErrorResponse(res, err, controllerName, functionName);
-        //     });
-    } catch (err) {
-        sendErrorResponse(res, err, controllerName, functionName);
-    }
-}
-
 exports.getEmploye = (req, res) => {
     const functionName = "getEmploye";
     try {
@@ -388,3 +295,96 @@ exports.generateData = async (req, res) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
     }
 };
+
+exports.updateHoraireTravail = (req, res) => {
+    const functionName = "updateHoraireTravail";
+
+    try {
+        verifyArgumentExistence(["id"],req.params);
+        verifyArgumentExistence(
+            [
+                "debut",
+                "fin",
+                "jourTravail"
+            ],
+            req.body
+        );
+
+        const { debut, fin, jourTravail } = req.body;
+        const { id } = req.params;
+
+        const heureDebut = debut.split(':');
+        const heureFin = fin.split(':');
+
+        const dateDeb = moment().set({'hour': heureDebut[0], 'minute': heureDebut[1], 'second': 0});
+        const dateFin = moment().set({'hour': heureFin[0], 'minute': heureFin[1], 'second': 0});
+
+        const updatedValue = {
+            horaireTravail: {
+                debut: dateDeb.toDate(),
+                fin: dateFin.toDate(),
+                jourTravail: jourTravail
+            }
+        }
+
+        Employedb.findOneAndUpdate({_id: id}, updatedValue)
+        .then((data)=>{
+            sendSuccessResponse(
+                res,
+                null,
+                controllerName,
+                functionName
+            );
+        }).catch((err) => {
+            sendErrorResponse(res, err, controllerName, functionName);
+        });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+
+}
+
+exports.getListeEmployeLibre = (req, res) => {
+    const functionName = "getListeEmployeLibre";
+
+    try {
+        verifyArgumentExistence(
+            [
+                "idService",
+                "dateHeureDebut"
+            ],
+            req.body
+        );
+
+        const { idService, dateHeureDebut } = req.body;
+
+
+        // Employedb.find({ _id: id, isDeleted: false })
+        //     .populate({ path: "user", populate: { path: "role" } })
+        //     .populate({
+        //         path: "listeTaches",
+        //         populate: [
+        //             {
+        //                 path: "employe",
+        //                 populate: { path: "user", populate: { path: "role" } },
+        //             },
+        //             { path: "service" },
+        //             { path: "statut" },
+        //         ],
+        //     })
+        //     .populate("mesServices")
+        //     .then((data) => {
+        //         sendSuccessResponse(
+        //             res,
+        //             data ? data[0] : null,
+        //             controllerName,
+        //             functionName
+        //         );
+        //     })
+        //     .catch((err) => {
+        //         sendErrorResponse(res, err, controllerName, functionName);
+        //     });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+}
