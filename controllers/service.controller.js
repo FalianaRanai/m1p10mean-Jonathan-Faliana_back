@@ -52,11 +52,12 @@ exports.addService = async (req, res) => {
     const { nomService, prix, duree, commission, description } = req.body;
 
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission", "description"],
+      ["nomService", "prix", "duree", "commission"],
       req.body
     );
 
     let nomFichier = await writeFile(req, "Service");
+    
     let nomsFichiers = await writeMultipleFile(req, "Service", "files");
 
     let newData = {
@@ -64,7 +65,7 @@ exports.addService = async (req, res) => {
       prix: prix,
       duree: duree,
       commission: commission,
-      description: description,
+      description: description ? description : undefined,
       image: nomFichier ? nomFichier : undefined,
       icone: "",
       galerie: nomsFichiers ? nomsFichiers : undefined,
@@ -90,11 +91,11 @@ exports.updateService = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { nomService, prix, duree, commission, description } = req.body;
+    const { nomService, prix, duree, commission, description, icone } = req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission", "description"],
+      ["nomService", "prix", "duree", "commission"],
       req.body
     );
 
@@ -106,9 +107,10 @@ exports.updateService = async (req, res) => {
       prix: prix,
       duree: duree,
       commission: commission,
-      description: description,
+      description: description ? description : undefined,
       image: nomFichier ? nomFichier : undefined,
       galerie: nomsFichiers ? nomsFichiers : undefined,
+      icone: icone ? icone : "",
     };
 
     Servicedb.findByIdAndUpdate(new ObjectId(id), newData, {
