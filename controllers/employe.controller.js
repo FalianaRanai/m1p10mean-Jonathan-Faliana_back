@@ -361,32 +361,26 @@ exports.getListeEmployeLibre = (req, res) => {
 
         const { idService, dateHeureDebut } = req.body;
 
+        const dateDebut = new Date(dateHeureDebut);
 
-        // Employedb.find({ _id: id, isDeleted: false })
-        //     .populate({ path: "user", populate: { path: "role" } })
-        //     .populate({
-        //         path: "listeTaches",
-        //         populate: [
-        //             {
-        //                 path: "employe",
-        //                 populate: { path: "user", populate: { path: "role" } },
-        //             },
-        //             { path: "service" },
-        //             { path: "statut" },
-        //         ],
-        //     })
-        //     .populate("mesServices")
-        //     .then((data) => {
-        //         sendSuccessResponse(
-        //             res,
-        //             data ? data[0] : null,
-        //             controllerName,
-        //             functionName
-        //         );
-        //     })
-        //     .catch((err) => {
-        //         sendErrorResponse(res, err, controllerName, functionName);
-        //     });
+        var query = {
+            mesServices: { $in: [new ObjectId(idService)] }, 
+            "horaireTravail.jourTravail":{ $in: [dateDebut.getDay()]}, 
+            isDeleted: false
+        };
+
+        Employedb.find(query)
+        .then((data) => {
+            sendSuccessResponse(
+                res,
+                data ? data : null,
+                controllerName,
+                functionName
+            );
+        })
+        .catch((err) => {
+            sendErrorResponse(res, err, controllerName, functionName);
+        });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
     }
