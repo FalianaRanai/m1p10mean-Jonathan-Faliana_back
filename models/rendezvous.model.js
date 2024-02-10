@@ -6,7 +6,11 @@ const rendezvousSchema = new mongoose.Schema({
         required: true,
         ref: "client"
     },
-    dateRdv: {
+    dateDebutRdv: {
+        type: Date,
+        required: true
+    },
+    dateFinRdv: {
         type: Date,
         required: true
     },

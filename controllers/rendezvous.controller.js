@@ -128,14 +128,14 @@ exports.addRendezvous = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { client, dateRdv, listeTaches } =
+    const { client, dateDebutRdv, dateFinRdv, listeTaches } =
       req.body;
 
     verifyArgumentExistence(
       [
         "client",
-        "employe",
-        "dateRdv",
+        "dateDebutRdv",
+        "dateFinRdv",
         "listeTaches",
       ],
       req.body
@@ -143,7 +143,8 @@ exports.addRendezvous = async (req, res) => {
 
     const newData = {
       client: client,
-      dateRdv: dateRdv,
+      dateDebutRdv: dateDebutRdv,
+      dateFinRdv: dateFinRdv,
       listeTaches: listeTaches.map((tache) => {
         return new ObjectId(tache);
       }),
@@ -173,18 +174,19 @@ exports.updateRendezvous = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { client, dateRdv, listeTaches } =
+    const { client, dateDebutRdv, dateFinRdv, listeTaches } =
       req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["client", "dateRdv", "listeTaches"],
+      ["client", "dateDebutRdv", "dateFinRdv", "listeTaches"],
       req.body
     );
 
     const newData = {
       client: client,
-      dateRdv: dateRdv,
+      dateDebutRdv: dateDebutRdv,
+      dateFinRdv: dateFinRdv,
       listeTaches: listeTaches.map((tache) => {
         return new ObjectId(tache);
       }),
