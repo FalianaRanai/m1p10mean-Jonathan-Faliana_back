@@ -5,6 +5,8 @@ const EmployeController = require("@controllers/employe.controller");
 const multer = require("multer");
 const upload = multer();
 
+router.post("/getListeEmployeLibre", EmployeController.getListeEmployeLibre);
+router.put("/updateHoraireTravail/:id", EmployeController.updateHoraireTravail);
 router.get("/getEmploye/:id", EmployeController.getEmploye);
 router.get("/getListeEmploye", EmployeController.getListeEmploye);
 router.post("/addEmploye", upload.fields([{ name: 'file', maxCount: 1 }]), EmployeController.addEmploye);

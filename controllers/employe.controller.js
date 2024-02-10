@@ -13,6 +13,7 @@ const NAMES = require("../utils/randomData.util");
 const getRandomNumber = require("../utils/getRandomNumber.util");
 const getRandomNumbersInArray = require("../utils/getRandomNumbersInArray.util");
 const Servicedb = require("../models/service.model");
+const moment = require("moment");
 
 exports.getEmploye = (req, res) => {
   const functionName = "getEmploye";
@@ -29,7 +30,7 @@ exports.getEmploye = (req, res) => {
             path: "employe",
             populate: [
               { path: "user", populate: { path: "role" } },
-              { path: "mesServices"}
+              { path: "mesServices" },
             ],
           },
           { path: "service" },
@@ -49,7 +50,7 @@ exports.getEmploye = (req, res) => {
         sendErrorResponse(res, err, controllerName, functionName);
       });
   } catch (err) {
-    sendErrorResponse(res, err, controllerName, functionName);
+    sendErrorResponse(res, err, controllerName, functionName, session);
   }
 };
 
@@ -190,23 +191,28 @@ exports.updateEmploye = async (req, res) => {
         return new ObjectId(element);
       }),
     };
-    
 
     Employedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-
-        if(req.body.password){
+        if (req.body.password) {
           let password = req.body.password;
           let confirmPassword = req.body.confirmPassword;
-          if((password && !confirmPassword) || (!password && confirmPassword)) {
+          if (
+            (password && !confirmPassword) ||
+            (!password && confirmPassword)
+          ) {
             throw new Error("Veillez remplir les champs de mot de passe");
           }
           if (confirmPassword && confirmPassword !== password) {
             throw new Error("Les mots de passes ne correspondent pas");
           }
-          await Userdb.findByIdAndUpdate(new ObjectId(data.user), { password: bcrypt.hashSync(req.body.password, 10) }, { session });
+          await Userdb.findByIdAndUpdate(
+            new ObjectId(data.user),
+            { password: bcrypt.hashSync(req.body.password, 10) },
+            { session }
+          );
         }
 
         sendSuccessResponse(res, data, controllerName, functionName, session);
@@ -285,8 +291,8 @@ exports.generateData = async (req, res) => {
         return listeServices[element];
       });
 
-      console.log(random1, random2, randomIndex, NAMES[random1])
-      
+      console.log(random1, random2, randomIndex, NAMES[random1]);
+
       const newDataUser = {
         email: `${NAMES[random1].toLowerCase()}_${NAMES[
           random2
@@ -301,7 +307,7 @@ exports.generateData = async (req, res) => {
         nomEmploye: NAMES[random1],
         prenomEmploye: NAMES[random2],
         mesServices: mesServices,
-        user: user
+        user: user,
       };
       const dataToInsert = new Employedb(newData);
       await dataToInsert.save({ session });
@@ -309,5 +315,82 @@ exports.generateData = async (req, res) => {
     sendSuccessResponse(res, null, controllerName, functionName, session);
   } catch (err) {
     sendErrorResponse(res, err, controllerName, functionName, session);
+  }
+};
+
+exports.updateHoraireTravail = (req, res) => {
+  const functionName = "updateHoraireTravail";
+
+  try {
+    verifyArgumentExistence(["id"], req.params);
+    verifyArgumentExistence(["debut", "fin", "jourTravail"], req.body);
+
+    const { debut, fin, jourTravail } = req.body;
+    const { id } = req.params;
+
+    const heureDebut = debut.split(":");
+    const heureFin = fin.split(":");
+
+    const dateDeb = moment().set({
+      hour: heureDebut[0],
+      minute: heureDebut[1],
+      second: 0,
+    });
+    const dateFin = moment().set({
+      hour: heureFin[0],
+      minute: heureFin[1],
+      second: 0,
+    });
+
+    const updatedValue = {
+      horaireTravail: {
+        debut: dateDeb.toDate(),
+        fin: dateFin.toDate(),
+        jourTravail: jourTravail,
+      },
+    };
+
+    Employedb.findOneAndUpdate({ _id: id }, updatedValue)
+      .then((data) => {
+        sendSuccessResponse(res, null, controllerName, functionName);
+      })
+      .catch((err) => {
+        sendErrorResponse(res, err, controllerName, functionName);
+      });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName);
+  }
+};
+
+exports.getListeEmployeLibre = (req, res) => {
+  const functionName = "getListeEmployeLibre";
+
+  try {
+    verifyArgumentExistence(["idService", "dateHeureDebut"], req.body);
+
+    const { idService, dateHeureDebut } = req.body;
+
+    const dateDebut = new Date(dateHeureDebut);
+
+    var query = {
+      mesServices: { $in: [new ObjectId(idService)] },
+      "horaireTravail.jourTravail": { $in: [dateDebut.getDay()] },
+      isDeleted: false,
+    };
+
+    Employedb.find(query)
+      .then((data) => {
+        sendSuccessResponse(
+          res,
+          data ? data : null,
+          controllerName,
+          functionName
+        );
+      })
+      .catch((err) => {
+        sendErrorResponse(res, err, controllerName, functionName);
+      });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName);
   }
 };

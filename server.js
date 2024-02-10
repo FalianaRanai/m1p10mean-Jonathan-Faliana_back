@@ -1,3 +1,5 @@
+process.env.TZ = 'Indian/Antananarivo';
+
 require('module-alias/register');
 const express = require("express");
 const bodyParser = require("body-parser");
