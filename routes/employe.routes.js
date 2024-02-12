@@ -5,11 +5,11 @@ const EmployeController = require("@controllers/employe.controller");
 const multer = require("multer");
 const upload = multer();
 
-router.post("/getListeEmployeLibre", EmployeController.getListeEmployeLibre);
-router.put("/updateHoraireTravail/:id", EmployeController.updateHoraireTravail);
 router.get("/getEmploye/:id", EmployeController.getEmploye);
 router.get("/getListeEmploye", EmployeController.getListeEmploye);
+router.post("/getListeEmployeLibre", EmployeController.getListeEmployeLibre);
 router.post("/addEmploye", upload.fields([{ name: 'file', maxCount: 1 }]), EmployeController.addEmploye);
+router.put("/updateHoraireTravail/:id", EmployeController.updateHoraireTravail);
 router.put("/updateEmploye/:id", upload.fields([{ name: 'file', maxCount: 1 }]), EmployeController.updateEmploye);
 router.delete("/deleteEmploye/:id", EmployeController.deleteEmploye);
 router.get("/generateData/:length", EmployeController.generateData);

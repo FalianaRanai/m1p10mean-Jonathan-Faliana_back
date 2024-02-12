@@ -51,7 +51,6 @@ app.use("/Rendezvous", rendezvousRoutes);
 app.use("/Statut", statutRoutes);
 app.use("/Tache", tacheRoutes);
 
-
 //  Gérer les paths introuvables
 app.use((req, res)=>{
     console.log("Page introuvable");

@@ -328,24 +328,10 @@ exports.updateHoraireTravail = (req, res) => {
         const { debut, fin, jourTravail } = req.body;
         const { id } = req.params;
 
-        const heureDebut = debut.split(":");
-        const heureFin = fin.split(":");
-
-        const dateDeb = moment().set({
-            hour: heureDebut[0],
-            minute: heureDebut[1],
-            second: 0,
-        });
-        const dateFin = moment().set({
-            hour: heureFin[0],
-            minute: heureFin[1],
-            second: 0,
-        });
-
         const updatedValue = {
             horaireTravail: {
-                debut: dateDeb.toDate(),
-                fin: dateFin.toDate(),
+                debut: new Date(debut),
+                fin: new Date(fin),
                 jourTravail: jourTravail,
             },
         };
@@ -372,44 +358,59 @@ exports.getListeEmployeLibre = (req, res) => {
 
         const dateDebut = new Date(dateHeureDebut);
 
+        //to make sure that the emp can do the specific service
+        //to make sure that the date of the service is inside of the emp workday
+        //to make sure that the emp is not deleted 
         var query = {
             mesServices: { $in: [new ObjectId(idService)] },
             "horaireTravail.jourTravail": { $in: [dateDebut.getDay()] },
             isDeleted: false,
         };
 
-        // Employedb.aggregate([
-        //     {
-        //         $addFields: {
-        //             startTime: { $dateToString: { format: "%H:%M:%S", date: "$dateStart" } },
-        //             endTime: { $dateToString: { format: "%H:%M:%S", date: "$dateEnd" } }
-        //         }
-        //     },
-        //     {
-        //         $match: {
-        //             $expr: {
-        //                 $and: [
-        //                     { $eq: ["$startTime", compareTime] },
-        //                     { $eq: ["$endTime", compareTime] }
-        //                 ]
-        //             }
-        //         }
-        //     }
-        // ])
+        //pour que l heure du service demande est dans l horaire de travail de l emp
+        Employedb.aggregate([
+            { $match: query },
+            {
+                $addFields: {
+                    startTime: { $dateToString: { format: "%H:%M:%S", date: "$horaireTravail.debut" } },
+                    endTime: { $dateToString: { format: "%H:%M:%S", date: "$horaireTravail.fin" } }
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $lte: ["$startTime", { $dateToString: { format: "%H:%M:%S", date: dateDebut } }] },
+                            { $gte: ["$endTime", { $dateToString: { format: "%H:%M:%S", date: dateDebut } }] }
+                        ]
+                    }
+                }
+            }
+        ]).then((data) => {
+            sendSuccessResponse(
+                res,
+                data ? data : null,
+                controllerName,
+                functionName
+            );
+        })
+        .catch((err) => {
+            sendErrorResponse(res, err, controllerName, functionName);
+        });
 
 
-        Employedb.find(query)
-            .then((data) => {
-                sendSuccessResponse(
-                    res,
-                    data ? data : null,
-                    controllerName,
-                    functionName
-                );
-            })
-            .catch((err) => {
-                sendErrorResponse(res, err, controllerName, functionName);
-            });
+        // Employedb.find(query)
+        //     .then((data) => {
+        //         sendSuccessResponse(
+        //             res,
+        //             data ? data : null,
+        //             controllerName,
+        //             functionName
+        //         );
+        //     })
+        //     .catch((err) => {
+        //         sendErrorResponse(res, err, controllerName, functionName);
+        //     });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
     }
