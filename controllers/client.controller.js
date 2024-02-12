@@ -23,6 +23,7 @@ exports.getClient = (req, res) => {
 
         Clientdb.find({ _id: id, isDeleted: false })
             .populate({ path: "user", populate: { path: "role" } })
+            .populate({ path: "preference", populate: [{ path: "service" }, { path: "employe"} ] })
             .populate({
                 path: "historiqueRDV",
                 populate: [
@@ -259,6 +260,32 @@ exports.generateData = async (req, res) => {
             await dataToInsert.save({ session });
         }
         sendSuccessResponse(res, null, controllerName, functionName, session);
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName, session);
+    }
+};
+
+exports.savePreference = async (req, res) => {
+    const functionName = "savePreference";
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        verifyArgumentExistence(["id"], req.params);
+        verifyArgumentExistence(["preference"], req.body);
+
+        const { id } = req.params;
+        const { preference } = req.body;
+
+        Clientdb.findByIdAndUpdate(new ObjectId(id), {preference: preference}, {
+            session,
+        })
+            .then(async (data) => {
+                sendSuccessResponse(res, data, controllerName, functionName, session);
+            })
+            .catch(async (err) => {
+                sendErrorResponse(res, err, controllerName, functionName, session);
+            });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName, session);
     }
