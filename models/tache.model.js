@@ -19,6 +19,11 @@ const tacheSchema = new mongoose.Schema({
         required: true,
         ref: "service",
     },
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "client",
+    },
     statut: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,

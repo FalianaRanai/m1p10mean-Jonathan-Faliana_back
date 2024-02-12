@@ -6,6 +6,7 @@ const ObjectId = require("mongodb").ObjectId;
 const sendErrorResponse = require("@utils/sendErrorResponse.util");
 const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const Statutdb = require("../models/statut.model");
 
 exports.getTache = (req, res) => {
     const functionName = "getTache";
@@ -142,6 +143,38 @@ exports.deleteTache = async (req, res) => {
     }
 };
 
+exports.getTacheByEmpToday = (req, res) => {
+    const functionName = "getTacheByEmpToday";
+    try {
+        verifyArgumentExistence(["id"], req.params);
+
+        const { id } = req.params;
+
+        Tachedb.find({ employe: id, isDeleted: false, 
+            $expr: {
+                $eq: [
+                    { $dateToString: { format: "%Y-%m-%d", date: "$dateDebut" } },
+                    { $dateToString: { format: "%Y-%m-%d", date: new Date() } }
+                ]} 
+            })
+            .populate({
+                path: "employe",
+                populate: { path: "user", populate: { path: "role" } },
+            })
+            .populate("service")
+            .populate("statut")
+            .populate("client")
+            .then((data) => {
+                sendSuccessResponse(res, data ? data : null, controllerName, functionName);
+            })
+            .catch((err) => {
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
+
 exports.getTacheByEmp = (req, res) => {
     const functionName = "getTacheByEmp";
     try {
@@ -149,19 +182,48 @@ exports.getTacheByEmp = (req, res) => {
 
         const { id } = req.params;
 
-        Tachedb.find({ employe: id, isDeleted: false })
+        Tachedb.find({ employe: id, isDeleted: false})
             .populate({
                 path: "employe",
                 populate: { path: "user", populate: { path: "role" } },
             })
             .populate("service")
             .populate("statut")
+            .populate("client")
             .then((data) => {
                 sendSuccessResponse(res, data ? data : null, controllerName, functionName);
             })
             .catch((err) => {
                 sendErrorResponse(res, err, controllerName, functionName);
             });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
+
+exports.updateTaches = async (req, res) => {
+    const functionName = "updateTaches";
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        verifyArgumentExistence(["token"], req.params);
+        verifyArgumentExistence(["listeTache"], req.body);
+
+        const { token } = req.params;
+        const { listeTache } = req.body;
+
+        let statutTermine = await Statutdb.findOne({ nomStatut: "terminé" });
+        if (!statutTermine) {
+            await new Statutdb({ nomStatut: "terminé" }).save();
+            statutTermine = await Statutdb.findOne({ nomRole: "terminé" });
+        }
+
+        listeTache.forEach(async (tache)=>{
+            await Tachedb.updateOne({_id: tache._id}, {statut: statutTermine._id});
+        });
+
+        sendSuccessResponse(res, null, controllerName, functionName);
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
     }

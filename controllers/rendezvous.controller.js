@@ -142,15 +142,6 @@ exports.addRendezvous = async (req, res) => {
         const { client, dateDebutRdv, dateFinRdv } = req.body;
         var { listeTaches } = req.body;
 
-        // listeTaches = listeTaches.map((tache)=>({
-        //     dateDebut: new Date(tache.dateDebut),
-        //     dateFin: new Date(tache.dateFin),
-        //     employe: new ObjectId(tache.employe),
-        //     service: new ObjectId(tache.service),
-        //     statut: new ObjectId(tache.statut),
-        //     isDeleted: false
-        // }));
-
         const newTache = await Tachedb.insertMany(listeTaches);
         const tacheIds = newTache.map(task => task._id);
 
