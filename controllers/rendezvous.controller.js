@@ -241,3 +241,35 @@ exports.deleteRendezvous = async (req, res) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
     }
 };
+
+exports.getListeRdvParClient = (req, res) => {
+    const functionName = "getListeRdvParClient";
+    try {
+        verifyArgumentExistence(["id"], req.params);
+        const { id } = req.params;
+
+        Rendezvousdb.find({ client: id })
+            .populate({
+                path: "listeTaches",
+                populate: [
+                    {
+                        path: "employe",
+                        populate: [
+                            { path: "user", populate: { path: "role" } },
+                            { path: "mesServices" },
+                        ],
+                    },
+                    { path: "service" },
+                    { path: "statut" },
+                ],
+            })
+            .then((data) => {
+                sendSuccessResponse(res, data, controllerName, functionName);
+            })
+            .catch((err) => {
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
