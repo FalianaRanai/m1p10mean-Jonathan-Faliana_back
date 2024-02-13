@@ -4,8 +4,11 @@ const TacheController = require("@controllers/tache.controller");
 
 router.get("/getTache/:id", TacheController.getTache);
 router.get("/getListeTache", TacheController.getListeTache);
+router.get("/getTacheByEmpToday/:id", TacheController.getTacheByEmpToday);
+router.get("/getTacheByEmp/:id", TacheController.getTacheByEmp);
 router.post("/addTache", TacheController.addTache);
 router.put("/updateTache/:id", TacheController.updateTache);
+router.post("/updateTaches/:token", TacheController.updateTaches)
 router.delete("/deleteTache/:id", TacheController.deleteTache);
 
 module.exports = router;

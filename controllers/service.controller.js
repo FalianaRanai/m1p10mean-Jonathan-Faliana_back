@@ -9,6 +9,7 @@ const writeFile = require("@utils/writeFile.util");
 const deleteFile = require("@utils/deleteFile.util");
 const writeMultipleFile = require("@utils/writeMultipleFile.util");
 const deleteMultipleFile = require("@utils/deleteMultipleFile.util");
+const Employedb = require("../models/employe.model");
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -16,9 +17,9 @@ exports.getService = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.findById(id)
+    Servicedb.find({_id: id, isDeleted: false})
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -31,7 +32,7 @@ exports.getService = (req, res) => {
 exports.getListeService = (req, res) => {
   const functionName = "getListeService";
   try {
-    Servicedb.find({})
+    Servicedb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -51,11 +52,12 @@ exports.addService = async (req, res) => {
     const { nomService, prix, duree, commission, description } = req.body;
 
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission", "description"],
+      ["nomService", "prix", "duree", "commission"],
       req.body
     );
 
     let nomFichier = await writeFile(req, "Service");
+    
     let nomsFichiers = await writeMultipleFile(req, "Service", "files");
 
     let newData = {
@@ -63,7 +65,7 @@ exports.addService = async (req, res) => {
       prix: prix,
       duree: duree,
       commission: commission,
-      description: description,
+      description: description ? description : undefined,
       image: nomFichier ? nomFichier : undefined,
       icone: "",
       galerie: nomsFichiers ? nomsFichiers : undefined,
@@ -89,11 +91,11 @@ exports.updateService = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { nomService, prix, duree, commission, description } = req.body;
+    const { nomService, prix, duree, commission, description, icone } = req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
-      ["nomService", "prix", "duree", "commission", "description"],
+      ["nomService", "prix", "duree", "commission"],
       req.body
     );
 
@@ -105,24 +107,17 @@ exports.updateService = async (req, res) => {
       prix: prix,
       duree: duree,
       commission: commission,
-      description: description,
+      description: description ? description : undefined,
       image: nomFichier ? nomFichier : undefined,
       galerie: nomsFichiers ? nomsFichiers : undefined,
+      icone: icone ? icone : "",
     };
 
     Servicedb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
-        await deleteMultipleFile("Service", data.galerie);
-
-        if (data.image != "default.webp") {
-          await deleteFile("Service", data.image);
-        }
-
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -140,14 +135,8 @@ exports.deleteService = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.findByIdAndDelete(new ObjectId(id), { session })
+    Servicedb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true },{ session })
       .then(async (data) => {
-        await deleteMultipleFile("Service", data.galerie);
-
-        if (data.image != "default.webp") {
-          await deleteFile("Service", data.image);
-        }
-
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {

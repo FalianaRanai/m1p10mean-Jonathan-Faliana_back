@@ -20,10 +20,10 @@ exports.getUser = (req, res) => {
 
     verifyArgumentExistence(["id"], req.params);
 
-    Userdb.findById(id)
+    Userdb.find({_id: id, isDeleted: false })
       .populate("role")
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -36,7 +36,7 @@ exports.getUser = (req, res) => {
 exports.getListeUser = (req, res) => {
   const functionName = "getListeUser";
   try {
-    Userdb.find({})
+    Userdb.find({ isDeleted: false })
       .populate("role")
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
@@ -137,9 +137,8 @@ exports.deleteUser = async (req, res) => {
 
     verifyArgumentExistence(["id"], req.params);
 
-    Userdb.findByIdAndDelete(new ObjectId(id), { session })
+    Userdb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
       .then(async (data) => {
-        await UserTokendb.deleteMany({ user: data._id });
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
@@ -239,7 +238,7 @@ exports.verifyUserToken = async (req, res) => {
     const { token } = req.body;
     verifyArgumentExistence(["token"], req.body);
 
-    UserTokendb.find({ token: token, expired_at: { $gte: new Date() } })
+    UserTokendb.find({ token: token, expired_at: { $gte: new Date() }, isDeleted: false })
       .then((data) => {
         if (data.length > 0) {
           sendSuccessResponse(res, true, controllerName, functionName);
@@ -264,7 +263,7 @@ exports.deleteUserToken = async (req, res) => {
     const { token } = req.params;
     verifyArgumentExistence(["token"], req.params);
 
-    UserTokendb.findOneAndDelete({ token: token }, { session })
+    UserTokendb.findOneAndUpdate({ token: token, isDeleted: true }, { session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
@@ -283,7 +282,7 @@ exports.logout = async (req, res) => {
   try {
     const { token } = req.body;
     verifyArgumentExistence(["token"], req.body);
-    UserTokendb.findOneAndDelete({ token: token }, { session })
+    UserTokendb.findOneAndUpdate({ token: token, isDeleted: true }, { session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })

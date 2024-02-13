@@ -18,10 +18,10 @@ exports.getManager = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Managerdb.findById(id)
+    Managerdb.find({_id: id, isDeleted: false })
       .populate({ path: "user", populate: { path: "role" } })
       .then((data) => {
-        sendSuccessResponse(res, data, controllerName, functionName);
+        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -34,7 +34,7 @@ exports.getManager = (req, res) => {
 exports.getListeManager = (req, res) => {
   const functionName = "getListeManager";
   try {
-    Managerdb.find({})
+    Managerdb.find({isDeleted: false})
       .populate({ path: "user", populate: { path: "role" } })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
@@ -139,12 +139,7 @@ exports.updateManager = async (req, res) => {
       session,
     })
       .then(async (data) => {
-        if (nomFichier && data.image != "default.webp") {
-          await deleteFile("Manager", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
@@ -162,19 +157,9 @@ exports.deleteManager = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Managerdb.findByIdAndDelete(new ObjectId(id), { session })
+    Managerdb.findByIdAndUpdate(new ObjectId(id), {isDeleted: true}, { session })
       .then(async (data) => {
-        await Userdb.deleteOne({ _id: new ObjectId(data.user) }, { session });
-        await UserTokendb.deleteMany(
-          { user: new ObjectId(data.user) },
-          { session }
-        );
-        if (data.image != "default.webp") {
-          await deleteFile("Manager", data.image);
-        }
         sendSuccessResponse(res, data, controllerName, functionName, session);
-
-        // sendSuccessResponse(res, data, controllerName, functionName, session);
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);

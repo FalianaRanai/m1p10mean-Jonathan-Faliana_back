@@ -1,3 +1,5 @@
+process.env.TZ = 'Indian/Antananarivo';
+
 require('module-alias/register');
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -48,7 +50,6 @@ app.use("/Employe", employeRoutes);
 app.use("/Rendezvous", rendezvousRoutes);
 app.use("/Statut", statutRoutes);
 app.use("/Tache", tacheRoutes);
-
 
 //  Gérer les paths introuvables
 app.use((req, res)=>{

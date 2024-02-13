@@ -6,24 +6,22 @@ const rendezvousSchema = new mongoose.Schema({
         required: true,
         ref: "client"
     },
-    dateRdv: {
+    dateDebutRdv: {
         type: Date,
         required: true
     },
-    listeEmployes: {
-        type: [mongoose.Schema.Types.ObjectId],
-        required: true,
-        ref: "employe"
-    },
-    listeServices: {
-        type: [mongoose.Schema.Types.ObjectId],
-        required: true,
-        ref: "service"
+    dateFinRdv: {
+        type: Date,
+        required: true
     },
     listeTaches:{
         type: [mongoose.Schema.Types.ObjectId],
         required: true,
         ref: "tache"
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

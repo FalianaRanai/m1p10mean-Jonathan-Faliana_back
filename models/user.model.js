@@ -13,6 +13,10 @@ const userSchema = new mongoose.Schema({
     role: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "role"
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 
