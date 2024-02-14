@@ -319,7 +319,7 @@ exports.generateData = async (req, res) => {
                 prenomEmploye: NAMES[random2],
                 mesServices: mesServices,
                 user: user,
-                horaireTravail: horaireTravail._id
+                horaireTravail: new ObjectId(horaireTravail._id)
             };
             const dataToInsert = new Employedb(newData);
             await dataToInsert.save({ session });

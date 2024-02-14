@@ -28,6 +28,7 @@ const employeSchema = new mongoose.Schema({
     },
     horaireTravail: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: "horaireTravail",
         required: true
     },
     isDeleted: {
