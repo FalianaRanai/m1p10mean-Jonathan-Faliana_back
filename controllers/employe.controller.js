@@ -398,6 +398,7 @@ exports.getListeEmployeLibre = async (req, res) => {
 
     let service = await Servicedb.findOne({ _id: idService });
     const dateFin = new Date(dateDebut.getTime() + service.duree * 60000);
+    // console.log("dateFin", dateFin);
 
     //to make sure that the emp can do the specific service
     //to make sure that the date of the service is inside of the emp workday
