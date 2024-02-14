@@ -201,7 +201,9 @@ exports.updateEmploye = async (req, res) => {
         if (typeof mesServices === 'string' || mesServices instanceof String)
                     mesServices = JSON.parse(mesServices);
 
-                horaireTravail = JSON.parse(horaireTravail);
+        horaireTravail = JSON.parse(horaireTravail);
+
+        const newHoraireTravail = await new HoraireTravaildb(horaireTravail).save({session});
 
         const newData = {
             nomEmploye: nomEmploye,
@@ -211,7 +213,7 @@ exports.updateEmploye = async (req, res) => {
             mesServices: mesServices.map((element) => {
                 return new ObjectId(element);
             }),
-            horaireTravail: horaireTravail
+            horaireTravail: new Object(newHoraireTravail._id)
         };
 
         Employedb.findByIdAndUpdate(new ObjectId(id), newData, {
