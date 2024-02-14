@@ -13,7 +13,8 @@ const NAMES = require("../utils/randomData.util");
 const getRandomNumber = require("../utils/getRandomNumber.util");
 const getRandomNumbersInArray = require("../utils/getRandomNumbersInArray.util");
 const Servicedb = require("../models/service.model");
-const moment = require("moment");
+const moment = require("moment-timezone");
+const HoraireTravaildb = require("../models/horaireTravail.model");
 
 exports.getEmploye = (req, res) => {
     const functionName = "getEmploye";
@@ -38,6 +39,7 @@ exports.getEmploye = (req, res) => {
                 ],
             })
             .populate("mesServices")
+            .populate("horaireTravail")
             .then((data) => {
                 sendSuccessResponse(
                     res,
@@ -71,6 +73,7 @@ exports.getListeEmploye = (req, res) => {
                 ],
             })
             .populate("mesServices")
+            .populate("horaireTravail")
             .then((data) => {
                 sendSuccessResponse(res, data, controllerName, functionName);
             })
@@ -303,11 +306,20 @@ exports.generateData = async (req, res) => {
             const dataUserToInsert = new Userdb(newDataUser);
             let user = await dataUserToInsert.save({ session });
 
+            const horaireTravail = new HoraireTravaildb({
+                debut: moment(new Date("2024-01-01 08:00")).tz("Indian/Antananarivo"),
+                fin: moment(new Date("2024-01-01 17:00")).tz("Indian/Antananarivo"),
+                jourTravail: [1, 2, 3, 4, 5], // replace with your desired days of work
+            });
+            await horaireTravail.save({ session });
+            // console.log('ID de l\'horaireTravail nouvellement inséré :', horaireTravail._id);
+
             const newData = {
                 nomEmploye: NAMES[random1],
                 prenomEmploye: NAMES[random2],
                 mesServices: mesServices,
                 user: user,
+                horaireTravail: horaireTravail._id
             };
             const dataToInsert = new Employedb(newData);
             await dataToInsert.save({ session });
