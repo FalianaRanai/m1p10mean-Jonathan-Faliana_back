@@ -2,13 +2,13 @@ const Servicedb = require("../models/service.model");
 const controllerName = "service.controller";
 const mongoose = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
-const writeFile = require("@utils/writeFile.util");
-const deleteFile = require("@utils/deleteFile.util");
-const writeMultipleFile = require("@utils/writeMultipleFile.util");
-const deleteMultipleFile = require("@utils/deleteMultipleFile.util");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
+const writeFile = require("../utils/writeFile.util");
+const deleteFile = require("../utils/deleteFile.util");
+const writeMultipleFile = require("../utils/writeMultipleFile.util");
+const deleteMultipleFile = require("../utils/deleteMultipleFile.util");
 const Employedb = require("../models/employe.model");
 
 exports.getService = (req, res) => {

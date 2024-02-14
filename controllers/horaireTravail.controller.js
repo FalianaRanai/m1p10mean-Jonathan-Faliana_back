@@ -3,9 +3,9 @@ const controllerName = "horaireTravail.controller";
 const mongoose = require("mongoose");
 const Userdb = require("../models/user.model");
 const ObjectId = require("mongodb").ObjectId;
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 
 exports.getHoraireTravail = (req, res) => {
   const functionName = "getHoraireTravail";
