@@ -1,21 +1,5 @@
 const mongoose = require("mongoose");
 
-const horaireTravailSchema = new mongoose.Schema({
-    debut: {
-        type: Date,
-        required: true
-    },
-    fin: {
-        type: Date,
-        required: true
-    },
-    jourTravail: {
-        type: [mongoose.Schema.Types.Number],
-        required: true
-    }
-});
-
-
 const employeSchema = new mongoose.Schema({
     nomEmploye: {
         type: String,
@@ -43,7 +27,7 @@ const employeSchema = new mongoose.Schema({
         ref: "service",
     },
     horaireTravail: {
-        type: horaireTravailSchema,
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     isDeleted: {

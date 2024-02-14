@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const StatutController = require("@controllers/statut.controller");
+const StatutController = require("../controllers/statut.controller");
 
 router.get("/getStatut/:id", StatutController.getStatut);
 router.get("/getListeStatut", StatutController.getListeStatut);

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const RendezvousController = require("@controllers/rendezvous.controller");
+const RendezvousController = require("../controllers/rendezvous.controller");
 
 router.get("/getRendezvous/:id", RendezvousController.getRendezvous);
 router.get("/getListeRdvParClient/:id", RendezvousController.getListeRdvParClient);

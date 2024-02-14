@@ -2,9 +2,9 @@ const UserTokendb = require("../models/userToken.model");
 const mongoose = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
 const controllerName = "userToken.controller";
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 
 exports.getUserToken = (req, res) => {
   const functionName = "getUserToken";

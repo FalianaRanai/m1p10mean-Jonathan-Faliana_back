@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const TacheController = require("@controllers/tache.controller");
+const TacheController = require("../controllers/tache.controller");
 
 router.get("/getTache/:id", TacheController.getTache);
 router.get("/getListeTache", TacheController.getListeTache);

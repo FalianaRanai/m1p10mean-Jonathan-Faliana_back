@@ -3,9 +3,9 @@ const controllerName = "tache.controller";
 const mongoose = require("mongoose");
 const Employedb = require("../models/employe.model");
 const ObjectId = require("mongodb").ObjectId;
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 const Statutdb = require("../models/statut.model");
 
 exports.getTache = (req, res) => {

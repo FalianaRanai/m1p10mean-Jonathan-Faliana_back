@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const UserTokenController = require("@controllers/userToken.controller");
+const UserTokenController = require("../controllers/userToken.controller");
 
 router.get("/getUserToken/:id", UserTokenController.getUserToken);
 router.get("/getListeUserToken", UserTokenController.getListeUserToken);

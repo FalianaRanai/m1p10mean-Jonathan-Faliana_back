@@ -1,5 +1,5 @@
-const Roledb = require("../models/role.model");
-const controllerName = "role.controller";
+const HoraireTravaildb = require("../models/horaireTravail.model");
+const controllerName = "horaireTravail.controller";
 const mongoose = require("mongoose");
 const Userdb = require("../models/user.model");
 const ObjectId = require("mongodb").ObjectId;
@@ -7,13 +7,13 @@ const sendErrorResponse = require("../utils/sendErrorResponse.util");
 const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 
-exports.getRole = (req, res) => {
-  const functionName = "getRole";
+exports.getHoraireTravail = (req, res) => {
+  const functionName = "getHoraireTravail";
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Roledb.find({_id: id, isDeleted: false})
+    HoraireTravaildb.find({_id: id, isDeleted: false})
       .then((data) => {
         sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
@@ -25,10 +25,10 @@ exports.getRole = (req, res) => {
   }
 };
 
-exports.getListeRole = (req, res) => {
-  const functionName = "getListeRole";
+exports.getListeHoraireTravail = (req, res) => {
+  const functionName = "getListeHoraireTravail";
   try {
-    Roledb.find({ idDeleted: false })
+    HoraireTravaildb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
@@ -40,19 +40,19 @@ exports.getListeRole = (req, res) => {
   }
 };
 
-exports.addRole = async (req, res) => {
-  const functionName = "addRole"
+exports.addHoraireTravail = async (req, res) => {
+  const functionName = "addHoraireTravail"
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { nomRole } = req.body;
-    verifyArgumentExistence(["nomRole"], req.body);
+    const { nomHoraireTravail } = req.body;
+    verifyArgumentExistence(["nomHoraireTravail"], req.body);
 
     const newData = {
-      nomRole: nomRole,
+      nomHoraireTravail: nomHoraireTravail,
     };
 
-    const dataToInsert = new Roledb(newData);
+    const dataToInsert = new HoraireTravaildb(newData);
     dataToInsert
       .save({ session })
       .then(async (data) => {
@@ -66,23 +66,23 @@ exports.addRole = async (req, res) => {
   }
 };
 
-exports.updateRole = async (req, res) => {
-  const functionName = "updateRole";
+exports.updateHoraireTravail = async (req, res) => {
+  const functionName = "updateHoraireTravail";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     // console.log("params", req.params, "body", req.body);
     const { id } = req.params;
-    const { nomRole } = req.body;
+    const { nomHoraireTravail } = req.body;
 
     
-    verifyArgumentExistence(["nomRole"], req.body);
+    verifyArgumentExistence(["nomHoraireTravail"], req.body);
     verifyArgumentExistence(["id"], req.params);
 
     const newData = {
-      nomRole: nomRole,
+      nomHoraireTravail: nomHoraireTravail,
     };
-    Roledb.findByIdAndUpdate(new ObjectId(id), newData, {
+    HoraireTravaildb.findByIdAndUpdate(new ObjectId(id), newData, {
       session,
     })
       .then(async (data) => {
@@ -96,14 +96,14 @@ exports.updateRole = async (req, res) => {
   }
 };
 
-exports.deleteRole = async (req, res) => {
-  const functionName = "deleteRole";
+exports.deleteHoraireTravail = async (req, res) => {
+  const functionName = "deleteHoraireTravail";
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
-    Roledb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true }, { session })
+    HoraireTravaildb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true },{ session })
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })
@@ -114,3 +114,26 @@ exports.deleteRole = async (req, res) => {
     sendErrorResponse(res, err, controllerName, functionName, session);
   }
 };
+
+exports.getHoraireTravailEnCours = async (req, res) =>{
+  const functionName = "getHoraireTravailEnCours";
+  try {
+
+    HoraireTravaildb.find({nomHoraireTravail: "en cours", isDeleted: false})
+      .then(async (data) => {
+
+        let horaireTravailEncours = data ? data[0] : null;
+        if(!horaireTravailEncours){
+          await (new HoraireTravaildb({ nomHoraireTravail: "en cours" })).save();
+          horaireTravailEncours = await HoraireTravaildb.findOne({ nomHoraireTravail: "en cours", isDeleted: false });
+        }
+
+        sendSuccessResponse(res, horaireTravailEncours, controllerName, functionName);
+      })
+      .catch((err) => {
+        sendErrorResponse(res, err, controllerName, functionName);
+      });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName);
+  }
+}

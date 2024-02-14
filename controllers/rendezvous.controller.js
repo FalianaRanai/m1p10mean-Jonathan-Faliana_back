@@ -4,9 +4,9 @@ const Tachedb = require("../models/tache.model");
 const controllerName = "rendezvous.controller";
 const mongoose = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 
 exports.getRendezvous = (req, res) => {
     const functionName = "getRendezvous";

@@ -5,12 +5,12 @@ const UserTokendb = require("../models/userToken.model");
 const controllerName = "manager.controller";
 const mongoose = require("mongoose");
 const ObjectId = require("mongodb").ObjectId;
-const sendErrorResponse = require("@utils/sendErrorResponse.util");
-const sendSuccessResponse = require("@utils/sendSuccessResponse.util");
-const verifyArgumentExistence = require("@utils/verifyArgumentExistence");
+const sendErrorResponse = require("../utils/sendErrorResponse.util");
+const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
+const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 const bcrypt = require("bcrypt");
-const writeFile = require("@utils/writeFile.util");
-const deleteFile = require("@utils/deleteFile.util");
+const writeFile = require("../utils/writeFile.util");
+const deleteFile = require("../utils/deleteFile.util");
 
 exports.getManager = (req, res) => {
   const functionName = "getManager";
