@@ -386,7 +386,7 @@ exports.updateHoraireTravail = (req, res) => {
   }
 };
 
-exports.getListeEmployeLibre = (req, res) => {
+exports.getListeEmployeLibre = async (req, res) => {
   const functionName = "getListeEmployeLibre";
 
   try {
@@ -395,6 +395,9 @@ exports.getListeEmployeLibre = (req, res) => {
     const { idService, dateHeureDebut } = req.body;
 
     const dateDebut = new Date(dateHeureDebut);
+
+    let service = await Servicedb.findOne({ _id: idService });
+    const dateFin = new Date(dateDebut.getTime() + service.duree * 60000);
 
     //to make sure that the emp can do the specific service
     //to make sure that the date of the service is inside of the emp workday
@@ -432,7 +435,7 @@ exports.getListeEmployeLibre = (req, res) => {
                 $expr: {
                     $and: [
                         { $lte: ["$startTime", { $dateToString: { format: "%H:%M:%S", date: dateDebut } }] },
-                        { $gte: ["$endTime", { $dateToString: { format: "%H:%M:%S", date: dateDebut } }] }
+                        { $gte: ["$endTime", { $dateToString: { format: "%H:%M:%S", date: dateFin } }] }
                     ]
                 }
             }
