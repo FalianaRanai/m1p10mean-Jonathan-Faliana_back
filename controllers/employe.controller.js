@@ -86,14 +86,16 @@ exports.addEmploye = async (req, res) => {
     const functionName = "addEmploye";
     const session = await mongoose.startSession();
     session.startTransaction();
+
     try {
-        const {
+        var {
             nomEmploye,
             prenomEmploye,
             email,
             password,
             confirmPassword,
             mesServices,
+            horaireTravail
         } = req.body;
 
         verifyArgumentExistence(
@@ -104,6 +106,7 @@ exports.addEmploye = async (req, res) => {
                 "password",
                 "confirmPassword",
                 "mesServices",
+                "horaireTravail"
             ],
             req.body
         );
@@ -133,6 +136,11 @@ exports.addEmploye = async (req, res) => {
             .then(async (newUser) => {
                 let nomFichier = await writeFile(req, "Employe");
 
+                if (typeof mesServices === 'string' || mesServices instanceof String)
+                    mesServices = JSON.parse(mesServices);
+
+                horaireTravail = JSON.parse(horaireTravail);
+
                 const newData = {
                     nomEmploye: nomEmploye,
                     prenomEmploye: prenomEmploye,
@@ -141,6 +149,7 @@ exports.addEmploye = async (req, res) => {
                     mesServices: mesServices.map((element) => {
                         return new ObjectId(element);
                     }),
+                    horaireTravail: horaireTravail
                 };
 
                 const dataToInsert = new Employedb(newData);
@@ -173,15 +182,21 @@ exports.updateEmploye = async (req, res) => {
     session.startTransaction();
     try {
         const { id } = req.params;
-        const { nomEmploye, prenomEmploye, user, mesServices } = req.body;
+        var { nomEmploye, prenomEmploye, user, mesServices, horaireTravail } = req.body;
 
         verifyArgumentExistence(["id"], req.params);
         verifyArgumentExistence(
-            ["nomEmploye", "prenomEmploye", "user", "mesServices"],
+            ["nomEmploye", "prenomEmploye", "user", "mesServices", "horaireTravail"],
             req.body
         );
 
         let nomFichier = await writeFile(req, "Employe");
+
+        if (typeof mesServices === 'string' || mesServices instanceof String)
+                    mesServices = JSON.parse(mesServices);
+
+                horaireTravail = JSON.parse(horaireTravail);
+
         const newData = {
             nomEmploye: nomEmploye,
             prenomEmploye: prenomEmploye,
@@ -190,6 +205,7 @@ exports.updateEmploye = async (req, res) => {
             mesServices: mesServices.map((element) => {
                 return new ObjectId(element);
             }),
+            horaireTravail: horaireTravail
         };
 
         Employedb.findByIdAndUpdate(new ObjectId(id), newData, {
@@ -397,20 +413,6 @@ exports.getListeEmployeLibre = (req, res) => {
         .catch((err) => {
             sendErrorResponse(res, err, controllerName, functionName);
         });
-
-
-        // Employedb.find(query)
-        //     .then((data) => {
-        //         sendSuccessResponse(
-        //             res,
-        //             data ? data : null,
-        //             controllerName,
-        //             functionName
-        //         );
-        //     })
-        //     .catch((err) => {
-        //         sendErrorResponse(res, err, controllerName, functionName);
-        //     });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
     }
