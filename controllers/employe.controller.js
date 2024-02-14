@@ -41,6 +41,7 @@ exports.getEmploye = (req, res) => {
             .populate("mesServices")
             .populate("horaireTravail")
             .then((data) => {
+                console.log(data);
                 sendSuccessResponse(
                     res,
                     data ? data[0] : null,
@@ -144,6 +145,8 @@ exports.addEmploye = async (req, res) => {
 
                 horaireTravail = JSON.parse(horaireTravail);
 
+                const newHoraireTravail = await new HoraireTravaildb(horaireTravail).save({session});
+
                 const newData = {
                     nomEmploye: nomEmploye,
                     prenomEmploye: prenomEmploye,
@@ -152,7 +155,7 @@ exports.addEmploye = async (req, res) => {
                     mesServices: mesServices.map((element) => {
                         return new ObjectId(element);
                     }),
-                    horaireTravail: horaireTravail
+                    horaireTravail: new ObjectId(newHoraireTravail._id)
                 };
 
                 const dataToInsert = new Employedb(newData);
