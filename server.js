@@ -7,12 +7,14 @@ const morgan = require('morgan');
 const app = express();
 const router = express.Router();
 const cors = require("cors");
+const compression = require("compression");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 4000;
 
 // ++++++++++++++++++++++++++ MIDDLEWARES +++++++++++++++++++++++++++++
 app.use(cors());
+app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '5mb' }));
 
