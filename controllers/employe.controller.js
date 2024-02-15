@@ -41,7 +41,7 @@ exports.getEmploye = (req, res) => {
       .populate("mesServices")
       .populate("horaireTravail")
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         sendSuccessResponse(
           res,
           data ? data[0] : null,
