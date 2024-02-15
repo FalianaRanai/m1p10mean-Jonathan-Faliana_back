@@ -1,4 +1,5 @@
 const Rendezvousdb = require("../models/rendezvous.model");
+const Paiementdb = require("../models/paiement.model");
 const Clientdb = require("../models/client.model");
 const Tachedb = require("../models/tache.model");
 const controllerName = "rendezvous.controller";
@@ -135,14 +136,18 @@ exports.addRendezvous = async (req, res) => {
                 "dateDebutRdv",
                 "dateFinRdv",
                 "listeTaches",
+                "paiement"
             ],
             req.body
         );
 
         const { client, dateDebutRdv, dateFinRdv } = req.body;
-        var { listeTaches } = req.body;
+        var { listeTaches, paiement } = req.body;
+
+        console.log(req.body);
 
         const newTache = await Tachedb.insertMany(listeTaches);
+        const newPaiement = await new Paiementdb(paiement).save({session});
         const tacheIds = newTache.map(task => task._id);
 
         // const newData = {
@@ -158,7 +163,8 @@ exports.addRendezvous = async (req, res) => {
             client: new ObjectId(client),
             dateDebutRdv: dateDebutRdv,
             dateFinRdv: dateFinRdv,
-            listeTaches: tacheIds
+            listeTaches: tacheIds,
+            paiement: newPaiement._id
         };
 
         const dataToInsert = new Rendezvousdb(newData);

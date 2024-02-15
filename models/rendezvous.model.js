@@ -19,6 +19,11 @@ const rendezvousSchema = new mongoose.Schema({
         required: true,
         ref: "tache"
     },
+    paiement: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "paiement"
+    },
     isDeleted: {
         type: Boolean,
         default: false
