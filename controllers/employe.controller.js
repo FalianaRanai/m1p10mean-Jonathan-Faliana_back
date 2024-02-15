@@ -22,39 +22,39 @@ exports.getEmploye = (req, res) => {
         const { id } = req.params;
         verifyArgumentExistence(["id"], req.params);
 
-        Employedb.find({ _id: id, isDeleted: false })
-            .populate({ path: "user", populate: { path: "role" } })
-            .populate({
-                path: "listeTaches",
-                populate: [
-                    {
-                        path: "employe",
-                        populate: [
-                            { path: "user", populate: { path: "role" } },
-                            { path: "mesServices" },
-                        ],
-                    },
-                    { path: "service" },
-                    { path: "statut" },
-                ],
-            })
-            .populate("mesServices")
-            .populate("horaireTravail")
-            .then((data) => {
-                console.log(data);
-                sendSuccessResponse(
-                    res,
-                    data ? data[0] : null,
-                    controllerName,
-                    functionName
-                );
-            })
-            .catch((err) => {
-                sendErrorResponse(res, err, controllerName, functionName);
-            });
-    } catch (err) {
-        sendErrorResponse(res, err, controllerName, functionName, session);
-    }
+    Employedb.find({ _id: id, isDeleted: false })
+      .populate({ path: "user", populate: { path: "role" } })
+      .populate({
+        path: "listeTaches",
+        populate: [
+          {
+            path: "employe",
+            populate: [
+              { path: "user", populate: { path: "role" } },
+              { path: "mesServices" },
+            ],
+          },
+          { path: "service" },
+          { path: "statut" },
+        ],
+      })
+      .populate("mesServices")
+      .populate("horaireTravail")
+      .then((data) => {
+        // console.log(data);
+        sendSuccessResponse(
+          res,
+          data ? data[0] : null,
+          controllerName,
+          functionName
+        );
+      })
+      .catch((err) => {
+        sendErrorResponse(res, err, controllerName, functionName);
+      });
+  } catch (err) {
+    sendErrorResponse(res, err, controllerName, functionName, session);
+  }
 };
 
 exports.getListeEmploye = (req, res) => {

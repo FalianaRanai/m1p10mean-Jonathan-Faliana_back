@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/FalianaRanai/m1p10mean-ROBISOA-Jonathan-Jacob-RANAIVOSEHENO-Faliana-Nirindra_BACK#readme",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.1",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
@@ -32,6 +33,7 @@
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.9",
     "nodemon": "^3.0.3",
     "terser-webpack-plugin": "^5.3.10",
     "uuid": "^9.0.1"
