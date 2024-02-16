@@ -10,6 +10,7 @@ const deleteFile = require("../utils/deleteFile.util");
 const writeMultipleFile = require("../utils/writeMultipleFile.util");
 const deleteMultipleFile = require("../utils/deleteMultipleFile.util");
 const Employedb = require("../models/employe.model");
+const Offredb = require("../models/offre.model");
 
 exports.getService = (req, res) => {
   const functionName = "getService";
@@ -17,9 +18,41 @@ exports.getService = (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.find({_id: id, isDeleted: false})
+    // Servicedb.find({ _id: id, isDeleted: false })
+
+    const currentDate = new Date();
+    Servicedb.aggregate([
+      {
+        $match: { isDeleted: false, _id: new ObjectId(id) },
+      },
+      {
+        $lookup: {
+          from: "offres",
+          let: { serviceId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$service", "$$serviceId"] },
+                    { $lte: ["$dateDebut", currentDate] },
+                    { $gte: ["$dateFin", currentDate] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "listeOffresAcitve",
+        },
+      },
+    ])
       .then((data) => {
-        sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
+        sendSuccessResponse(
+          res,
+          data ? data[0] : null,
+          controllerName,
+          functionName
+        );
       })
       .catch((err) => {
         sendErrorResponse(res, err, controllerName, functionName);
@@ -32,8 +65,35 @@ exports.getService = (req, res) => {
 exports.getListeService = (req, res) => {
   const functionName = "getListeService";
   try {
-    Servicedb.find({ isDeleted: false })
-      .then((data) => {
+    // Servicedb.find({ isDeleted: false })
+
+    const currentDate = new Date();
+    Servicedb.aggregate([
+      {
+        $match: { isDeleted: false },
+      },
+      {
+        $lookup: {
+          from: "offres",
+          let: { serviceId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$service", "$$serviceId"] },
+                    { $lte: ["$dateDebut", currentDate] },
+                    { $gte: ["$dateFin", currentDate] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: "listeOffresAcitve",
+        },
+      },
+    ])
+      .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
       .catch((err) => {
@@ -57,7 +117,7 @@ exports.addService = async (req, res) => {
     );
 
     let nomFichier = await writeFile(req, "Service");
-    
+
     let nomsFichiers = await writeMultipleFile(req, "Service", "files");
 
     let newData = {
@@ -91,7 +151,8 @@ exports.updateService = async (req, res) => {
   session.startTransaction();
   try {
     const { id } = req.params;
-    const { nomService, prix, duree, commission, description, icone } = req.body;
+    const { nomService, prix, duree, commission, description, icone } =
+      req.body;
 
     verifyArgumentExistence(["id"], req.params);
     verifyArgumentExistence(
@@ -135,7 +196,11 @@ exports.deleteService = async (req, res) => {
     const { id } = req.params;
     verifyArgumentExistence(["id"], req.params);
 
-    Servicedb.findByIdAndUpdate(new ObjectId(id), { isDeleted: true },{ session })
+    Servicedb.findByIdAndUpdate(
+      new ObjectId(id),
+      { isDeleted: true },
+      { session }
+    )
       .then(async (data) => {
         sendSuccessResponse(res, data, controllerName, functionName, session);
       })

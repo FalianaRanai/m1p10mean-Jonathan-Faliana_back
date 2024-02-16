@@ -58,8 +58,8 @@ exports.addTache = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { dateDebut, dateFin, employe, service, statut } = req.body;
-        verifyArgumentExistence(["dateDebut", "dateFin", "employe", "service", "statut"], req.body);
+        const { dateDebut, dateFin, employe, service, statut, prix, prixAvantRemise } = req.body;
+        verifyArgumentExistence(["dateDebut", "dateFin", "employe", "service", "statut", "prix", "prixAvantRemise"], req.body);
 
         const newData = {
             dateDebut: dateDebut,
@@ -67,6 +67,8 @@ exports.addTache = async (req, res) => {
             employe: new ObjectId(employe),
             service: new ObjectId(service),
             statut: new ObjectId(statut),
+            prix: prix,
+            prixAvantRemise: prixAvantRemise,
         }
 
         const dataToInsert = new Tachedb(newData);
