@@ -41,6 +41,7 @@ const rendezvousRoutes = require("./routes/rendezvous.routes");
 const statutRoutes = require("./routes/statut.routes");
 const tacheRoutes = require("./routes/tache.routes");
 const offreRoutes = require("./routes/offre.routes");
+const statistiqueRoutes = require("./routes/statistique.routes");
 
 app.use("/", baseRoutes);
 app.use("/Role", roleRoutes);
@@ -54,6 +55,7 @@ app.use("/Rendezvous", rendezvousRoutes);
 app.use("/Statut", statutRoutes);
 app.use("/Tache", tacheRoutes);
 app.use("/Offre", offreRoutes);
+app.use("/Statistique", statistiqueRoutes);
 
 //  Gérer les paths introuvables
 app.use((req, res)=>{
