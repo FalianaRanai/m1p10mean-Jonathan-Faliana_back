@@ -152,7 +152,7 @@ exports.addRendezvous = async (req, res) => {
         let tache = listeTaches[i];
         let service = await Servicedb.findOne({_id: new ObjectId(tache.service)});
         // console.log("service: ", service);
-        temp.push({...tache, prix: service.prix, prixAvantRemise: 0 });
+        temp.push({...tache, prix: service.prix, prixAvantRemise: service.prixAvantRemise });
     }
     // console.log("ora ora", temp);
 
