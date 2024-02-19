@@ -20,6 +20,10 @@ const paiementSchema = new mongoose.Schema({
     montant: {
         type: Number,
         required: true,
+    },
+    isDeleted:{
+        type: Boolean,
+        default: false
     }
 });
 

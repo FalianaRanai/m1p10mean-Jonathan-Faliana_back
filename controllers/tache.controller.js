@@ -315,7 +315,12 @@ exports.getReservationParJour = (req, res) => {
       {
         $match: {
           "taches.isDeleted": false,
-          "taches.dateDebut": { $gte: date1, $lte: date2 },
+          "taches.dateDebut": {
+            $gte: moment(date1).tz("Indian/Antananarivo").toDate(),
+          },
+          "taches.dateFin": {
+            $lte: moment(date2).tz("Indian/Antananarivo").toDate(),
+          },
         },
       },
     ])
@@ -359,7 +364,12 @@ exports.getReservationParMois = (req, res) => {
       {
         $match: {
           "taches.isDeleted": false,
-          "taches.dateDebut": { $gte: date1, $lte: date2 },
+          "taches.dateDebut": {
+            $gte: moment(date1).tz("Indian/Antananarivo").toDate(),
+          },
+          "taches.dateFin": {
+            $lte: moment(date2).tz("Indian/Antananarivo").toDate(),
+          },
         },
       },
     ])
