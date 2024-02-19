@@ -67,7 +67,9 @@ exports.addOffre = async (req, res) => {
     dataToInsert
       .save({ session })
       .then(async (data) => {
+
         sendSuccessResponse(res, data, controllerName, functionName, session);
+        
       })
       .catch(async (err) => {
         sendErrorResponse(res, err, controllerName, functionName, session);
