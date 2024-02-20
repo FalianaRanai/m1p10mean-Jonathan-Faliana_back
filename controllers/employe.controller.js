@@ -22,39 +22,39 @@ exports.getEmploye = (req, res) => {
         const { id } = req.params;
         verifyArgumentExistence(["id"], req.params);
 
-    Employedb.find({ _id: id, isDeleted: false })
-      .populate({ path: "user", populate: { path: "role" } })
-      .populate({
-        path: "listeTaches",
-        populate: [
-          {
-            path: "employe",
-            populate: [
-              { path: "user", populate: { path: "role" } },
-              { path: "mesServices" },
-            ],
-          },
-          { path: "service" },
-          { path: "statut" },
-        ],
-      })
-      .populate("mesServices")
-      .populate("horaireTravail")
-      .then((data) => {
-        // console.log(data);
-        sendSuccessResponse(
-          res,
-          data ? data[0] : null,
-          controllerName,
-          functionName
-        );
-      })
-      .catch((err) => {
-        sendErrorResponse(res, err, controllerName, functionName);
-      });
-  } catch (err) {
-    sendErrorResponse(res, err, controllerName, functionName, session);
-  }
+        Employedb.find({ _id: id, isDeleted: false })
+            .populate({ path: "user", populate: { path: "role" } })
+            .populate({
+                path: "listeTaches",
+                populate: [
+                    {
+                        path: "employe",
+                        populate: [
+                            { path: "user", populate: { path: "role" } },
+                            { path: "mesServices" },
+                        ],
+                    },
+                    { path: "service" },
+                    { path: "statut" },
+                ],
+            })
+            .populate("mesServices")
+            .populate("horaireTravail")
+            .then((data) => {
+                // console.log(data);
+                sendSuccessResponse(
+                    res,
+                    data ? data[0] : null,
+                    controllerName,
+                    functionName
+                );
+            })
+            .catch((err) => {
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName, session);
+    }
 };
 
 exports.getListeEmploye = (req, res) => {
@@ -411,14 +411,13 @@ exports.getListeEmployeLibre = async (req, res) => {
 
         //pour que l heure du service demande est dans l horaire de travail de l emp
         Employedb.aggregate([
-
             {
                 $lookup: {
                     from: "horairetravails",
                     localField: "horaireTravail",
                     foreignField: "_id",
-                    as: "horaireTravail"
-                }
+                    as: "horaireTravail",
+                },
             },
 
             { $unwind: "$horaireTravail" },
@@ -427,20 +426,37 @@ exports.getListeEmployeLibre = async (req, res) => {
 
             {
                 $addFields: {
-                    startTime: { $dateToString: { format: "%H:%M:%S", date: "$horaireTravail.debut" } },
-                    endTime: { $dateToString: { format: "%H:%M:%S", date: "$horaireTravail.fin" } }
-                }
+                    startTime: {
+                        $dateToString: {
+                            format: "%H:%M:%S",
+                            date: "$horaireTravail.debut",
+                        },
+                    },
+                    endTime: {
+                        $dateToString: { format: "%H:%M:%S", date: "$horaireTravail.fin" },
+                    },
+                },
             },
             {
                 $match: {
                     $expr: {
                         $and: [
-                            { $lte: ["$startTime", { $dateToString: { format: "%H:%M:%S", date: dateDebut } }] },
-                            { $gte: ["$endTime", { $dateToString: { format: "%H:%M:%S", date: dateFin } }] }
-                        ]
-                    }
-                }
-            }
+                            {
+                                $lte: [
+                                    "$startTime",
+                                    { $dateToString: { format: "%H:%M:%S", date: dateDebut } },
+                                ],
+                            },
+                            {
+                                $gte: [
+                                    "$endTime",
+                                    { $dateToString: { format: "%H:%M:%S", date: dateFin } },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
         ])
             .then((data) => {
                 sendSuccessResponse(
@@ -455,5 +471,52 @@ exports.getListeEmployeLibre = async (req, res) => {
             });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
+
+exports.getTempsMoyenEmploye = (req, res) => {
+    const functionName = "getTempsMoyenEmploye";
+    try {
+        const { id } = req.params;
+        verifyArgumentExistence(["id"], req.params);
+
+        Employedb.find({ _id: id, isDeleted: false })
+            .populate({ path: "user", populate: { path: "role" } })
+            .populate({
+                path: "listeTaches",
+                populate: [
+                    {
+                        path: "employe",
+                        populate: [
+                            { path: "user", populate: { path: "role" } },
+                            { path: "mesServices" },
+                        ],
+                    },
+                    { path: "service" },
+                    { path: "statut" },
+                ],
+            })
+            .then((data) => {
+
+                // console.log(data[0]);
+
+                let listeTempsMoyen = data[0].listeTaches.map((element) => {
+                    return element.service.duree;
+                });
+
+                const tempsMoyen = listeTempsMoyen.reduce((a, b) => a + b, 0) / listeTempsMoyen.length
+
+                sendSuccessResponse(
+                    res,
+                    tempsMoyen,
+                    controllerName,
+                    functionName
+                );
+            })
+            .catch((err) => {
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName, session);
     }
 };

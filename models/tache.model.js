@@ -29,6 +29,14 @@ const tacheSchema = new mongoose.Schema({
         required: true,
         ref: "statut",
     },
+    prix:{
+        type: Number,
+        required: true
+    },
+    prixAvantRemise:{
+        type: Number,
+        required: true
+    },
     isDeleted: {
         type: Boolean,
         default: false

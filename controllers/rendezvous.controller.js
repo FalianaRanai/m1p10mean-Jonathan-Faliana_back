@@ -8,6 +8,8 @@ const ObjectId = require("mongodb").ObjectId;
 const sendErrorResponse = require("../utils/sendErrorResponse.util");
 const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
+const Employedb = require("../models/employe.model");
+const Servicedb = require("../models/service.model");
 
 exports.getRendezvous = (req, res) => {
     const functionName = "getRendezvous";
@@ -295,6 +297,7 @@ exports.getListeRdvParClient = (req, res) => {
                 sendErrorResponse(res, err, controllerName, functionName);
             });
     } catch (err) {
+        console.log(err);
         sendErrorResponse(res, err, controllerName, functionName);
     }
 };
@@ -399,20 +402,20 @@ exports.getRdvReservationParJour = (req, res) => {
         ];
 
         Rendezvousdb
-        .aggregate(pipeline)
-        .then((result) => {
-            const daysInMonth = Array.from({ length: numDays(startOfMonth.getFullYear(), startOfMonth.getMonth()+1) }, (_, i) => ({
-                label: i + 1,
-                value: 0
-            }));
+            .aggregate(pipeline)
+            .then((result) => {
+                const daysInMonth = Array.from({ length: numDays(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1) }, (_, i) => ({
+                    label: i + 1,
+                    value: 0
+                }));
 
-            result.forEach(item => {
-                const dayIndex = item.day - 1;
-                daysInMonth[dayIndex].value = item.count;
-            });
+                result.forEach(item => {
+                    const dayIndex = item.day - 1;
+                    daysInMonth[dayIndex].value = item.count;
+                });
 
-            sendSuccessResponse(res, daysInMonth, controllerName, functionName);
-        })
+                sendSuccessResponse(res, daysInMonth, controllerName, functionName);
+            })
             .catch((err) => {
                 console.log(err);
                 sendErrorResponse(res, err, controllerName, functionName);

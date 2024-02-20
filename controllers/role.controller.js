@@ -28,7 +28,7 @@ exports.getRole = (req, res) => {
 exports.getListeRole = (req, res) => {
   const functionName = "getListeRole";
   try {
-    Roledb.find({ idDeleted: false })
+    Roledb.find({ isDeleted: false })
       .then((data) => {
         sendSuccessResponse(res, data, controllerName, functionName);
       })
