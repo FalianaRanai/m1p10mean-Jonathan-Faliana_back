@@ -131,24 +131,44 @@ exports.addRendezvous = async (req, res) => {
     session.startTransaction();
     try {
         verifyArgumentExistence(
-            [
-                "client",
-                "dateDebutRdv",
-                "dateFinRdv",
-                "listeTaches",
-                "paiement"
-            ],
+            ["client", "dateDebutRdv", "dateFinRdv", "listeTaches", "paiement"],
             req.body
         );
 
         const { client, dateDebutRdv, dateFinRdv } = req.body;
-        var { listeTaches, paiement } = req.body;
+        let { listeTaches, paiement } = req.body;
 
-        console.log(req.body);
+        // console.log(req.body);
 
-        const newTache = await Tachedb.insertMany(listeTaches);
-        const newPaiement = await new Paiementdb(paiement).save({session});
-        const tacheIds = newTache.map(task => task._id);
+        // listeTaches = listeTaches.map(async (tache) => {
+        //     let service = await Servicedb.findOne({_id: new ObjectId(tache.service)});
+        //     return {...tache, prix: service.prix, prixAvantRemise: 0 };  
+        // });
+
+        let temp = [];
+        for (let i = 0; i < listeTaches.length; i++) {
+            let tache = listeTaches[i];
+            let service = await Servicedb.findOne({ _id: new ObjectId(tache.service) });
+            // console.log("service: ", service);
+            temp.push({ ...tache, prix: service.prix, prixAvantRemise: service.prixAvantRemise });
+        }
+        // console.log("ora ora", temp);
+
+        const newTache = await Tachedb.insertMany(temp);
+        // console.log("newTache: ", newTache);
+
+        const newPaiement = await new Paiementdb(paiement).save({ session });
+        const tacheIds = newTache.map((task) => task._id);
+
+        const updateListeTachesEmploye = newTache.map((element) => {
+            return { idEmploye: element.employe, idTache: element._id };
+        });
+        for (let i = 0; i < updateListeTachesEmploye.length; i++) {
+            await Employedb.updateOne(
+                { _id: new ObjectId(updateListeTachesEmploye[i].idEmploye) },
+                { $push: { listeTaches: new ObjectId(updateListeTachesEmploye[i].idTache) } }
+            );
+        }
 
         // const newData = {
         //     client: new ObjectId(client),
@@ -164,7 +184,7 @@ exports.addRendezvous = async (req, res) => {
             dateDebutRdv: dateDebutRdv,
             dateFinRdv: dateFinRdv,
             listeTaches: tacheIds,
-            paiement: newPaiement._id
+            paiement: newPaiement._id,
         };
 
         const dataToInsert = new Rendezvousdb(newData);
@@ -192,8 +212,7 @@ exports.updateRendezvous = async (req, res) => {
     session.startTransaction();
     try {
         const { id } = req.params;
-        const { client, dateDebutRdv, dateFinRdv, listeTaches } =
-            req.body;
+        const { client, dateDebutRdv, dateFinRdv, listeTaches } = req.body;
 
         verifyArgumentExistence(["id"], req.params);
         verifyArgumentExistence(
@@ -276,6 +295,130 @@ exports.getListeRdvParClient = (req, res) => {
                 sendErrorResponse(res, err, controllerName, functionName);
             });
     } catch (err) {
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
+
+exports.getRdvReservationParMois = (req, res) => {
+    const functionName = "getRdvReservationParMois";
+    try {
+        var year = new Date().getFullYear();
+
+        var monthsArray = [
+            { month: 1, name: "Janvier" },
+            { month: 2, name: "Fevrier" },
+            { month: 3, name: "Mars" },
+            { month: 4, name: "Avril" },
+            { month: 5, name: "Mai" },
+            { month: 6, name: "Juin" },
+            { month: 7, name: "Juillet" },
+            { month: 8, name: "Aout" },
+            { month: 9, name: "Septembre" },
+            { month: 10, name: "Octobre" },
+            { month: 11, name: "Novembre" },
+            { month: 12, name: "Decembre" }
+        ];
+
+        Rendezvousdb.aggregate([
+            {
+                $match: {
+                    isDeleted: false,
+                    dateDebutRdv: {
+                        $gte: new Date(year, 0, 1), // Start of the year
+                        $lt: new Date(year + 1, 0, 1) // Start of the next year
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$dateDebutRdv" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    month: "$_id",
+                    count: 1
+                }
+            },
+            {
+                $sort: { month: 1 }
+            }
+        ]).then((data) => {
+            var resultMap = new Map(data.map(item => [item.month, item.count]));
+
+            var mergedArray = monthsArray.map(month => ({
+                // month: month.month,
+                label: month.name,
+                value: resultMap.has(month.month) ? resultMap.get(month.month) : 0
+            }));
+
+            sendSuccessResponse(res, mergedArray, controllerName, functionName);
+        })
+            .catch((err) => {
+                console.log(err);
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        console.log(err);
+        sendErrorResponse(res, err, controllerName, functionName);
+    }
+};
+
+exports.getRdvReservationParJour = (req, res) => {
+    const functionName = "getRdvReservationParJour";
+    try {
+        const numDays = (y, m) => new Date(y, m, 0).getDate();
+
+        const currentDate = new Date();
+
+        const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+        const pipeline = [
+            {
+                $match: {
+                    dateDebutRdv: { $gte: startOfMonth, $lt: endOfMonth },
+                    isDeleted: false
+                }
+            },
+            {
+                $group: {
+                    _id: { $dayOfMonth: "$dateDebutRdv" },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    day: "$_id",
+                    count: 1
+                }
+            }
+        ];
+
+        Rendezvousdb
+        .aggregate(pipeline)
+        .then((result) => {
+            const daysInMonth = Array.from({ length: numDays(startOfMonth.getFullYear(), startOfMonth.getMonth()+1) }, (_, i) => ({
+                label: i + 1,
+                value: 0
+            }));
+
+            result.forEach(item => {
+                const dayIndex = item.day - 1;
+                daysInMonth[dayIndex].value = item.count;
+            });
+
+            sendSuccessResponse(res, daysInMonth, controllerName, functionName);
+        })
+            .catch((err) => {
+                console.log(err);
+                sendErrorResponse(res, err, controllerName, functionName);
+            });
+    } catch (err) {
+        console.log(err);
         sendErrorResponse(res, err, controllerName, functionName);
     }
 };
