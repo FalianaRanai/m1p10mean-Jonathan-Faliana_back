@@ -18,46 +18,45 @@ exports.getService = (req, res) => {
         const { id } = req.params;
         verifyArgumentExistence(["id"], req.params);
 
-        // Servicedb.find({ _id: id, isDeleted: false })
-
         const currentDate = new Date();
-        Servicedb.aggregate([
-            {
-                $match: { isDeleted: false, _id: new ObjectId(id) },
-            },
-            {
-                $lookup: {
-                    from: "offres",
-                    let: { serviceId: "$_id" },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$service", "$$serviceId"] },
-                                        { $lte: ["$dateDebut", currentDate] },
-                                        { $gte: ["$dateFin", currentDate] },
-                                    ],
-                                },
-                            },
-                        },
-                    ],
-                    as: "listeOffresActive",
-                },
-            },
-            {
-                $addFields: { 
-                    prixAvantRemise: "$prix",
-                    prix: {
-                        $cond: {
-                            if: { $ne: [{ $size: "$listeOffresActive" }, 0] },
-                            then: { $multiply: ["$prix", { $divide: [ { $arrayElemAt: ["$listeOffresActive.remise", 0] }, 100] }] },
-                            else: "$prix"
-                        }
-                    }
-                }
-            }
-        ])
+        // Servicedb.aggregate([
+        //     {
+        //         $match: { isDeleted: false, _id: new ObjectId(id) },
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "offres",
+        //             let: { serviceId: "$_id" },
+        //             pipeline: [
+        //                 {
+        //                     $match: {
+        //                         $expr: {
+        //                             $and: [
+        //                                 { $eq: ["$service", "$$serviceId"] },
+        //                                 { $lte: ["$dateDebut", currentDate] },
+        //                                 { $gte: ["$dateFin", currentDate] },
+        //                             ],
+        //                         },
+        //                     },
+        //                 },
+        //             ],
+        //             as: "listeOffresActive",
+        //         },
+        //     },
+        //     {
+        //         $addFields: { 
+        //             prixAvantRemise: "$prix",
+        //             prix: {
+        //                 $cond: {
+        //                     if: { $ne: [{ $size: "$listeOffresActive" }, 0] },
+        //                     then: { $multiply: ["$prix", { $divide: [ { $arrayElemAt: ["$listeOffresActive.remise", 0] }, 100] }] },
+        //                     else: "$prix"
+        //                 }
+        //             }
+        //         }
+        //     }
+        // ])
+        this.findServiceDetails({ isDeleted: false, _id: new ObjectId(id) }, currentDate, currentDate)
             .then((data) => {
                 console.log(data);
                 sendSuccessResponse(
@@ -81,6 +80,7 @@ exports.getListeService = (req, res) => {
         // Servicedb.find({ isDeleted: false })
 
         const currentDate = new Date();
+
         Servicedb.aggregate([
             {
                 $match: { isDeleted: false },
@@ -235,4 +235,44 @@ exports.deleteService = async (req, res) => {
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName, session);
     }
+};
+
+exports.findServiceDetails = (matchQuery, dateDeb, dateFin) => {
+    return Servicedb.aggregate([
+        {
+            $match: matchQuery,
+        },
+        {
+            $lookup: {
+                from: "offres",
+                let: { serviceId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$service", "$$serviceId"] },
+                                    { $lte: ["$dateDebut", dateDeb] },
+                                    { $gte: ["$dateFin", dateFin] },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                as: "listeOffresActive",
+            },
+        },
+        {
+            $addFields: { 
+                prixAvantRemise: "$prix",
+                prix: {
+                    $cond: {
+                        if: { $ne: [{ $size: "$listeOffresActive" }, 0] },
+                        then: { $multiply: ["$prix", { $divide: [ { $arrayElemAt: ["$listeOffresActive.remise", 0] }, 100] }] },
+                        else: "$prix"
+                    }
+                }
+            }
+        }
+    ])
 };

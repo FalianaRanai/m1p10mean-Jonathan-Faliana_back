@@ -145,8 +145,8 @@ exports.getOffreEnCours = (req, res) => {
   const functionName = "getOffreEnCours";
   try {
     Offredb.find({
-      dateDebut: { $lte: moment(new Date()).tz("Indian/Antananatarivo") },
-      dateFin: { $gte: moment(new Date()).tz("Indian/Antananatarivo") },
+      dateDebut: { $lte: moment(new Date()).tz("Indian/Antananarivo") },
+      dateFin: { $gte: moment(new Date()).tz("Indian/Antananarivo") },
       isDeleted: false,
     })
       .populate("service")
