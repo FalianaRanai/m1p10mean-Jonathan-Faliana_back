@@ -58,7 +58,7 @@ exports.getService = (req, res) => {
         // ])
         this.findServiceDetails({ isDeleted: false, _id: new ObjectId(id) }, currentDate, currentDate)
             .then((data) => {
-                console.log(data);
+                // console.log(data);
                 sendSuccessResponse(
                     res,
                     data ? data[0] : null,
