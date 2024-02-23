@@ -324,7 +324,7 @@ exports.getRappelRendezVous = (req, res) => {
     d1.setHours(0, 0, 0, 0);
     d2.setHours(0, 0, 0, 0);
 
-    console.log(moment(d1).tz("Indian/Antananarivo"), moment(d2).tz("Indian/Antananarivo"));
+    // console.log(moment(d1).tz("Indian/Antananarivo"), moment(d2).tz("Indian/Antananarivo"));
 
     Rendezvousdb.find({
       isDeleted: false,
@@ -372,7 +372,7 @@ exports.getRappelRendezVous = (req, res) => {
         ],
       })
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         sendSuccessResponse(res, data ? data[0] : null, controllerName, functionName);
       })
       .catch((err) => {
