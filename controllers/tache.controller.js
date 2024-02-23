@@ -340,7 +340,7 @@ exports.getReservationParMois = (req, res) => {
     try {
         let date = new Date();
         date.setDate(1);
-        console.log(date);
+        // console.log(date);
 
         let date1 = new Date(date.toString());
 
