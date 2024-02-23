@@ -420,6 +420,15 @@ exports.getListeEmployeLibre = async (req, res) => {
                 },
             },
 
+            {
+                $lookup: {
+                    from: "taches",
+                    localField: "listeTaches",
+                    foreignField: "_id",
+                    as: "taches",
+                },
+            },
+
             { $unwind: "$horaireTravail" },
 
             { $match: query },

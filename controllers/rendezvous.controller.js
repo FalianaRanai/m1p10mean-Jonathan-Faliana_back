@@ -217,7 +217,7 @@ exports.addRendezvous = async (req, res) => {
                 await sendMail(
                     clientEmail,
                     {name: "Beautify", email: process.env.FROM_EMAIL},
-                    "Paiement effectué",
+                    "Paiement effectué avec succès le "+moment().tz("Indian/Antananarivo").format('YYYY-MM-DD HH:mm:ss'),
                     "Votre paiement a été réalisé avec succès le "+moment().tz("Indian/Antananarivo").format('YYYY-MM-DD HH:mm:ss')+".",
                     htmlTask   
                 );
