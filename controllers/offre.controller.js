@@ -38,7 +38,7 @@ exports.getListeOffre = (req, res) => {
     Offredb.find({ isDeleted: false })
       .populate("service")
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         sendSuccessResponse(res, data, controllerName, functionName);
       })
       .catch((err) => {
