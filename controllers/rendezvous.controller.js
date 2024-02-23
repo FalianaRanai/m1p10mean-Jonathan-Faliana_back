@@ -10,6 +10,10 @@ const sendSuccessResponse = require("../utils/sendSuccessResponse.util");
 const verifyArgumentExistence = require("../utils/verifyArgumentExistence");
 const Employedb = require("../models/employe.model");
 const Servicedb = require("../models/service.model");
+const sendMail = require("../utils/sendMail.util");
+const moment = require("moment-timezone");
+
+const RdvController = require("./service.controller");
 
 exports.getRendezvous = (req, res) => {
     const functionName = "getRendezvous";
@@ -137,7 +141,7 @@ exports.addRendezvous = async (req, res) => {
             req.body
         );
 
-        const { client, dateDebutRdv, dateFinRdv } = req.body;
+        const { client, dateDebutRdv, dateFinRdv, clientEmail } = req.body;
         let { listeTaches, paiement } = req.body;
 
         // console.log(req.body);
@@ -148,12 +152,16 @@ exports.addRendezvous = async (req, res) => {
         // });
 
         let temp = [];
+        let services = [];
         for (let i = 0; i < listeTaches.length; i++) {
             let tache = listeTaches[i];
-            let service = await Servicedb.findOne({ _id: new ObjectId(tache.service) });
-            // console.log("service: ", service);
-            temp.push({ ...tache, prix: service.prix, prixAvantRemise: service.prixAvantRemise });
+            // let service = await Servicedb.findOne({ _id: new ObjectId(tache.service) });
+            let service = await RdvController.findServiceDetails({ isDeleted: false, _id: new ObjectId(tache.service) }, new Date(), new Date())
+            
+            services.push(service[0].nomService);
+            temp.push({ ...tache, prix: service[0].prix, prixAvantRemise: service[0].prixAvantRemise });
         }
+
         // console.log("ora ora", temp);
 
         const newTache = await Tachedb.insertMany(temp);
@@ -197,6 +205,23 @@ exports.addRendezvous = async (req, res) => {
                     { _id: data.client },
                     { $push: { historiqueRDV: data._id } }
                 );
+
+                var htmlTask = '<p>';
+                for (let i = 0; i < temp.length; i++) {
+                    htmlTask += '<p>Nom: '+services[i]+'</p>'
+                    htmlTask += '<p>Prix: $ '+temp[0].prix+'</p>'
+                    htmlTask += '<br/>'
+                }
+                htmlTask += '</p>';
+                
+                await sendMail(
+                    clientEmail,
+                    {name: "Beautify", email: process.env.FROM_EMAIL},
+                    "Paiement effectué avec succès le "+moment().tz("Indian/Antananarivo").format('YYYY-MM-DD HH:mm:ss'),
+                    "Votre paiement a été réalisé avec succès le "+moment().tz("Indian/Antananarivo").format('YYYY-MM-DD HH:mm:ss')+".",
+                    htmlTask   
+                );
+
                 sendSuccessResponse(res, data, controllerName, functionName, session);
             })
             .catch((err) => {
