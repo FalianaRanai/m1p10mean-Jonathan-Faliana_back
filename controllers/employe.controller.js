@@ -356,9 +356,12 @@ exports.generateData = async (req, res) => {
     }
 };
 
-exports.updateHoraireTravail = (req, res) => {
+exports.updateHoraireTravail = async (req, res) => {
     const functionName = "updateHoraireTravail";
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
     try {
         verifyArgumentExistence(["id"], req.params);
         verifyArgumentExistence(["debut", "fin", "jourTravail"], req.body);
@@ -366,20 +369,26 @@ exports.updateHoraireTravail = (req, res) => {
         const { debut, fin, jourTravail } = req.body;
         const { id } = req.params;
 
+        const horaireTravail = new HoraireTravaildb({
+            debut: new Date(debut),
+            fin: new Date(fin),
+            jourTravail: jourTravail,
+        });
+
+        await horaireTravail.save({ session });
+
         const updatedValue = {
-            horaireTravail: {
-                debut: new Date(debut),
-                fin: new Date(fin),
-                jourTravail: jourTravail,
-            },
+            horaireTravail: new ObjectId(horaireTravail._id),
         };
 
-        Employedb.findOneAndUpdate({ _id: id }, updatedValue)
+        Employedb.findOneAndUpdate({ _id: id }, updatedValue, {
+            session,
+        })
             .then((data) => {
-                sendSuccessResponse(res, null, controllerName, functionName);
+                sendSuccessResponse(res, null, controllerName, functionName, session);
             })
             .catch((err) => {
-                sendErrorResponse(res, err, controllerName, functionName);
+                sendErrorResponse(res, err, controllerName, functionName, session);
             });
     } catch (err) {
         sendErrorResponse(res, err, controllerName, functionName);

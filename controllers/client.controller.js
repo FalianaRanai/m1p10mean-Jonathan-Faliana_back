@@ -73,11 +73,6 @@ exports.getListeClient = (req, res) => {
         path: "historiqueRDV",
         populate: [
           {
-            path: "listeEmployes",
-            populate: { path: "user", populate: { path: "role" } },
-          },
-          { path: "listeServices" },
-          {
             path: "listeTaches",
             populate: [
               {
